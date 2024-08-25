@@ -1,6 +1,31 @@
 #ifndef JENJIN_ENGINE_H
 #define JENJIN_ENGINE_H
 
-void test(void);
+#include "scene.h"
+#include "shader.h"
+#include "window.h"
+#include <vector>
 
-#endif
+namespace Jenjin {
+class Engine {
+public:
+	Engine();
+	~Engine() = default;
+
+	void check_version(void);
+
+	void launch(int width, int height, const char* title);
+
+	void add_scene(const Scene& scene);
+	bool activate_scene(int index);
+
+private:
+	Shader* m_shader = nullptr;
+
+	Window m_window;
+	Scene* m_active_scene = nullptr;
+	std::vector<Scene> m_scenes;
+};
+}
+
+#endif // JENJIN_ENGINE_H
