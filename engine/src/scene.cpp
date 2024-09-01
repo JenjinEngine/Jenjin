@@ -4,6 +4,7 @@
 
 #include "scene.h"
 #include "mesh.h"
+#include "shader.h"
 
 using namespace Jenjin;
 
@@ -11,17 +12,17 @@ Scene::~Scene() {
 	glDeleteVertexArrays(1, &m_vao);
 	glDeleteBuffers(1, &m_vbo);
 	glDeleteBuffers(1, &m_ebo);
+
+	delete m_shader;
 }
 
 void Scene::build() {
-	#ifndef NDEBUG
-	unsigned int m_indices_size = m_indices.size();
-	for (unsigned int i = 0; i < m_indices_size; i++)
-		spdlog::debug("Index: {}", m_indices[i]);
-	unsigned int m_vertices_size = m_vertices.size();
-	for (unsigned int i = 0; i < m_vertices_size; i++)
-		spdlog::debug("Vertex: ({}, {}, {})", m_vertices[i].position.x, m_vertices[i].position.y, m_vertices[i].position.z);
-	#endif
+	/* Shader shader = Shader("engine/shaders/vertex.glsl", "engine/shaders/fragment.glsl"); */
+	/* this->m_shader = &shader; */
+	this->m_shader = new Shader("engine/shaders/vertex.glsl", "engine/shaders/fragment.glsl");
+
+	spdlog::debug("Creating camera");
+	m_shader->use(); m_camera.setup_proj(*m_shader);
 
 	spdlog::debug("Building scene");
 
@@ -58,9 +59,27 @@ void Scene::add_mesh(MeshData mesh) {
 }
 
 void Scene::render() {
+	this->m_shader->use();
+
+	#ifndef NDEBUG
+	m_camera.update_deltas();
+	m_camera.processInput(glfwGetCurrentContext());
+	#endif
+
+	if (m_camera.has_new_projection())
+		m_camera.setup_proj(*m_shader);
+
+	m_camera.bind_uniforms(*m_shader);
+
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 
-	for (Mesh& mesh : m_meshes)
+	for (Mesh& mesh : m_meshes) {
+		// TODO: Have the model matrix come from GameObject
+		glm::mat4 model = glm::mat4(1.0f);
+
+		m_shader->set("u_model", model);
+
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_INT, 0, mesh.base_vertex);
+	}
 }

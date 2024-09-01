@@ -43,7 +43,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 		fShaderFile.close();
 
 		// Convert string streams to strings
+		spdlog::debug("Reading vertex shader file: `{}`", vertexPath);
 		vertexCode   = vShaderStream.str();
+		spdlog::debug("Reading fragment shader file: `{}`", fragmentPath);
 		fragmentCode = fShaderStream.str();
 	} catch(std::ifstream::failure &e) {
 		spdlog::error("Current working directory: {}", std::filesystem::current_path().string());

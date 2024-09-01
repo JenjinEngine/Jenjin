@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#include "camera.h"
 #include "mesh.h"
 
 namespace Jenjin {
@@ -22,6 +23,11 @@ private:
 	std::vector<Mesh> m_meshes;
 	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
+
+	// Shader needs to be loaded in build, after the context is created
+	Shader* m_shader = nullptr;
+
+	Camera m_camera;
 };
 }
 

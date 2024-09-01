@@ -47,9 +47,6 @@ void Engine::launch(int width, int height, const char* title) {
 		return;
 	}
 
-	Shader shader("engine/shaders/vertex.glsl", "engine/shaders/fragment.glsl");
-	this->m_shader = &shader;
-
 	for (Scene& scene : m_scenes)
 		scene.build();
 
@@ -70,12 +67,6 @@ void Engine::launch(int width, int height, const char* title) {
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		if (m_shader != nullptr) {
-			m_shader->use();
-		} else {
-			spdlog::warn("No active shader");
-		}
-
 		if (m_active_scene != nullptr) {
 			m_active_scene->render();
 		} else {
@@ -88,4 +79,16 @@ void Engine::launch(int width, int height, const char* title) {
 
 	spdlog::info("Terminating GLFW");
 	glfwTerminate();
+}
+
+void Engine::set_resized_callback(GLFWwindowsizefun callback) {
+	m_window.setResizeCallback(callback);
+}
+
+void Engine::set_key_callback(GLFWkeyfun callback) {
+	m_window.setKeyCallback(callback);
+}
+
+void Engine::set_mouse_callback(GLFWcursorposfun callback) {
+	m_window.setMouseCallback(callback);
 }

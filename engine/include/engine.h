@@ -19,9 +19,11 @@ public:
 	void add_scene(const Scene& scene);
 	bool activate_scene(int index);
 
-private:
-	Shader* m_shader = nullptr;
+	void set_resized_callback(GLFWwindowsizefun callback);
+	void set_key_callback(GLFWkeyfun callback);
+	void set_mouse_callback(GLFWcursorposfun callback);
 
+private:
 	Window m_window;
 	Scene* m_active_scene = nullptr;
 	std::vector<Scene> m_scenes;
