@@ -3,7 +3,8 @@
 #include <spdlog/spdlog.h>
 
 #include "scene.h"
-#include "mesh.h"
+#include "components/mesh.h"
+#include "glm/ext/matrix_transform.hpp"
 #include "shader.h"
 
 using namespace Jenjin;
@@ -17,8 +18,12 @@ Scene::~Scene() {
 }
 
 void Scene::build() {
-	/* Shader shader = Shader("engine/shaders/vertex.glsl", "engine/shaders/fragment.glsl"); */
-	/* this->m_shader = &shader; */
+	for (GameObject* gobj : m_game_objects) {
+		MeshData meshdata = gobj->meshdata;
+		int mesh_id = add_mesh(meshdata);
+		gobj->mesh_id = mesh_id;
+	}
+
 	this->m_shader = new Shader("engine/shaders/vertex.glsl", "engine/shaders/fragment.glsl");
 
 	spdlog::debug("Creating camera");
@@ -45,41 +50,70 @@ void Scene::build() {
 	glEnableVertexAttribArray(1);
 }
 
-void Scene::add_mesh(MeshData mesh) {
+void Scene::add_game_objects(std::vector<GameObject*> game_objects) {
+	this->m_game_objects.reserve(game_objects.size());
+
+	for (GameObject* gobj : game_objects) {
+		add_game_object(gobj);
+	}
+}
+
+void Scene::add_game_object(GameObject* game_object) {
+	game_object->id = (int)m_game_objects.size() - 1;
+	m_game_objects.emplace_back(game_object);
+}
+
+int Scene::add_mesh(MeshData mesh) {
 	int base_vertex = (int)m_vertices.size();
 	int base_index = (int)m_indices.size();
 
 	std::vector<Vertex>& vertices = mesh.vertices;
 	std::vector<unsigned int>& indices = mesh.indices;
 
-	this->m_meshes.emplace_back(base_vertex, base_index, (int)vertices.size(), (int)indices.size());
+	Mesh l_mesh = { base_vertex, base_index, (int)vertices.size(), (int)indices.size() };
+	this->m_meshes.push_back(l_mesh);
+	/* spdlog::debug("bvtx: {} bindx: {} vtxcnt: {} idxcnt: {}", base_vertex, base_index, vertices.size(), indices.size()); */
 
 	m_vertices.insert(m_vertices.end(), vertices.begin(), vertices.end());
 	m_indices.insert(m_indices.end(), indices.begin(), indices.end());
+
+	return (int)m_meshes.size() - 1;
 }
 
 void Scene::render() {
 	this->m_shader->use();
 
-	#ifndef NDEBUG
-	m_camera.update_deltas();
+#ifndef NDEBUG
 	m_camera.processInput(glfwGetCurrentContext());
-	#endif
+#endif
 
-	if (m_camera.has_new_projection())
+	if (m_camera.m_changed_projection) {
 		m_camera.setup_proj(*m_shader);
+		m_camera.m_changed_projection = false;
+	}
 
 	m_camera.bind_uniforms(*m_shader);
 
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 
-	for (Mesh& mesh : m_meshes) {
-		// TODO: Have the model matrix come from GameObject
+	for (GameObject* gobj : m_game_objects) {
 		glm::mat4 model = glm::mat4(1.0f);
-
+		model = glm::translate(model, gobj->transform.position);
+		model = glm::rotate(model, glm::radians(gobj->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 		m_shader->set("u_model", model);
 
-		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_INT, 0, mesh.base_vertex);
+		Mesh* mesh = &m_meshes[gobj->mesh_id];
+
+		glDrawElementsBaseVertex(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, 0, mesh->base_vertex);
 	}
+
+	/* for (Mesh& mesh : m_meshes) { */
+	/* 	// TODO: Have the model matrix come from GameObject */
+	/* 	glm::mat4 model = glm::mat4(1.0f); */
+
+	/* 	m_shader->set("u_model", model); */
+
+	/* 	glDrawElementsBaseVertex(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_INT, 0, mesh.base_vertex); */
+	/* } */
 }

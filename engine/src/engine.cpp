@@ -4,6 +4,7 @@
 
 #include "engine.h"
 #include "GLFW/glfw3.h"
+#include "state.h"
 
 const char* ENGINE_VERSION = "0.0.1";
 
@@ -67,6 +68,12 @@ void Engine::launch(int width, int height, const char* title) {
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		float currentFrame = glfwGetTime();
+		JenjinState.deltaTime = currentFrame - m_lastFrame;
+
+		if (m_render_callback != nullptr)
+			m_render_callback(this, window);
+
 		if (m_active_scene != nullptr) {
 			m_active_scene->render();
 		} else {
@@ -75,6 +82,7 @@ void Engine::launch(int width, int height, const char* title) {
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		m_lastFrame = currentFrame;
 	}
 
 	spdlog::info("Terminating GLFW");
@@ -91,4 +99,8 @@ void Engine::set_key_callback(GLFWkeyfun callback) {
 
 void Engine::set_mouse_callback(GLFWcursorposfun callback) {
 	m_window.setMouseCallback(callback);
+}
+
+void Engine::set_render_callback(std::function<void(Engine*, GLFWwindow*)> callback) {
+	m_render_callback = callback;
 }

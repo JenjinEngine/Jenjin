@@ -1,4 +1,5 @@
 #include "camera.h"
+#include "state.h"
 
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
@@ -23,7 +24,7 @@ void Camera::processInput(GLFWwindow* window) {
 		m_changed_projection = true;
 	}
 
-	const float cameraSpeed = 2.5 * m_deltaTime;
+	const float cameraSpeed = 2.5 * JenjinState.deltaTime;
 
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		m_cameraPos -= cameraRight * cameraSpeed;
@@ -38,12 +39,6 @@ void Camera::processInput(GLFWwindow* window) {
 		m_cameraPos -= cameraSpeed * cameraUp;
 }
 
-void Camera::update_deltas() {
-	float currentFrame = glfwGetTime();
-	m_deltaTime = currentFrame - m_lastFrame;
-	m_lastFrame = currentFrame;
-}
-
 void Camera::bind_uniforms(Shader& shader) {
 	m_view = glm::lookAt(m_cameraPos, m_cameraPos + cameraFront, cameraUp);
 	shader.set("u_view", m_view);
@@ -52,14 +47,4 @@ void Camera::bind_uniforms(Shader& shader) {
 void Camera::setup_proj(Shader& shader) {
 	glm::mat4 projection = glm::ortho(-1.0f * m_zoom, 1.0f * m_zoom, -1.0f * m_zoom, 1.0f * m_zoom, 0.1f, 100.0f);
 	shader.set("u_projection", projection);
-}
-
-
-bool Camera::has_new_projection() {
-	if (m_changed_projection) {
-		m_changed_projection = false;
-		return true;
-	}
-
-	return false;
 }
