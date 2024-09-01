@@ -4,9 +4,11 @@
 #include "components/transform.h"
 #include "components/mesh.h"
 
+#include <string>
+
 namespace Jenjin {
 struct GameObject {
-	GameObject(MeshData meshdata);
+	GameObject(MeshData meshdata, std::string name) : meshdata(meshdata), name(name) {}
 
 	void set_transform(Transform transform) { this->transform = transform; }
 	void set_position(glm::vec3 position) { transform.position = position; }
@@ -20,9 +22,10 @@ struct GameObject {
 	Transform transform = { glm::vec3(0.0f, 0.0f, 0.0f), 0.0f };
 	MeshData meshdata;
 
-	int mesh_id = -1;
+	std::string name;
 
-	int id = 0;
+	int mesh_id = -1;
+	int id = -1;
 };
 }
 

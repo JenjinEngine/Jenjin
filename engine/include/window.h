@@ -7,6 +7,9 @@
 namespace Jenjin {
 class Window {
 public:
+	Window() = default;
+	~Window() = default;
+
 	// Create a new window
 	bool NewWindow(int width, int height, const char* title);
 

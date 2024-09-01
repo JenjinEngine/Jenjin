@@ -23,6 +23,7 @@ bool Window::NewWindow(int width, int height, const char* title) {
 
 	// Make the m_window's context current
 	glfwMakeContextCurrent(m_window);
+	glfwSwapInterval(0);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		SHOW_ERROR("Failed to initialize GLAD: {}");

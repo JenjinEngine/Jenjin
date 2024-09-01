@@ -17,7 +17,7 @@ public:
 
 	void launch(int width, int height, const char* title);
 
-	void add_scene(const Scene& scene);
+	void add_scene(Scene* scene);
 	bool activate_scene(int index);
 
 	void set_resized_callback(GLFWwindowsizefun callback);
@@ -31,7 +31,7 @@ private:
 
 	Window m_window;
 	Scene* m_active_scene = nullptr;
-	std::vector<Scene> m_scenes;
+	std::vector<Scene*> m_scenes;
 
 	// Used in delta time calculation
 	float m_lastFrame = 0.0f;

@@ -1,11 +1,14 @@
 #include <glad/glad.h>
 #include <GL/gl.h>
 #include <spdlog/spdlog.h>
+#include <thread>
 
 #include "scene.h"
 #include "components/mesh.h"
+#include "gameobject.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "shader.h"
+#include "state.h"
 
 using namespace Jenjin;
 
@@ -18,7 +21,7 @@ Scene::~Scene() {
 }
 
 void Scene::build() {
-	for (GameObject* gobj : m_game_objects) {
+	for (GameObject* gobj : m_gameobjects) {
 		MeshData meshdata = gobj->meshdata;
 		int mesh_id = add_mesh(meshdata);
 		gobj->mesh_id = mesh_id;
@@ -51,7 +54,7 @@ void Scene::build() {
 }
 
 void Scene::add_game_objects(std::vector<GameObject*> game_objects) {
-	this->m_game_objects.reserve(game_objects.size());
+	this->m_gameobjects.reserve(game_objects.size());
 
 	for (GameObject* gobj : game_objects) {
 		add_game_object(gobj);
@@ -59,8 +62,8 @@ void Scene::add_game_objects(std::vector<GameObject*> game_objects) {
 }
 
 void Scene::add_game_object(GameObject* game_object) {
-	game_object->id = (int)m_game_objects.size() - 1;
-	m_game_objects.emplace_back(game_object);
+	game_object->id = (int)m_gameobjects.size() - 1;
+	m_gameobjects.emplace_back(game_object);
 }
 
 int Scene::add_mesh(MeshData mesh) {
@@ -80,6 +83,11 @@ int Scene::add_mesh(MeshData mesh) {
 	return (int)m_meshes.size() - 1;
 }
 
+void Scene::update() {
+	if (m_update_function != nullptr)
+		m_update_function(this);
+}
+
 void Scene::render() {
 	this->m_shader->use();
 
@@ -97,7 +105,7 @@ void Scene::render() {
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 
-	for (GameObject* gobj : m_game_objects) {
+	for (GameObject* gobj : m_gameobjects) {
 		// PERF: Cache the model matrix
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, gobj->transform.position);
@@ -108,13 +116,25 @@ void Scene::render() {
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, 0, mesh->base_vertex);
 	}
+}
 
-	/* for (Mesh& mesh : m_meshes) { */
-	/* 	// TODO: Have the model matrix come from GameObject */
-	/* 	glm::mat4 model = glm::mat4(1.0f); */
+GameObject* Scene::get_gameobject(int id) {
+	for (GameObject* gobj : m_gameobjects) {
+		if (gobj->id == id)
+			return gobj;
+	}
 
-	/* 	m_shader->set("u_model", model); */
+	return nullptr;
+}
 
-	/* 	glDrawElementsBaseVertex(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_INT, 0, mesh.base_vertex); */
-	/* } */
+GameObject* Scene::get_gameobject(std::string name) {
+	for (GameObject* gobj : m_gameobjects) {
+		if (gobj->name == name) {
+			return gobj;
+		}
+	}
+
+	spdlog::debug("Could not find gameobject with name {}", name);
+
+	return nullptr;
 }

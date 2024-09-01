@@ -25,13 +25,17 @@ void Engine::check_version(void) {
 	spdlog::info("Jenjin engine version: {}", ENGINE_VERSION);
 }
 
-void Engine::add_scene(const Scene& scene) {
+void Engine::add_scene(Scene* scene) {
+	#ifndef NDEBUG
+	spdlog::debug("Adding scene with {} game objects", scene->m_gameobjects.size());
+	#endif
+
 	m_scenes.emplace_back(scene);
 }
 
 bool Engine::activate_scene(int index) {
 	if (index < m_scenes.size()) {
-		m_active_scene = &m_scenes[index];
+		m_active_scene = m_scenes[index];
 	} else {
 		spdlog::error("Scene index out of bounds");
 		return false;
@@ -41,15 +45,19 @@ bool Engine::activate_scene(int index) {
 }
 
 void Engine::launch(int width, int height, const char* title) {
+	JenjinState.engine = this;
+	JenjinState.window = &m_window;
+
 	spdlog::info("Launching Jenjin engine");
 
 	if (!m_window.NewWindow(width, height, title)) {
+		// TODO: Display reason for failure
 		spdlog::error("Failed to create window");
 		return;
 	}
 
-	for (Scene& scene : m_scenes)
-		scene.build();
+	for (Scene* scene : m_scenes)
+		scene->build();
 
 	GLFWwindow* window = this->m_window.getWindow();
 
@@ -75,6 +83,7 @@ void Engine::launch(int width, int height, const char* title) {
 			m_render_callback(this, window);
 
 		if (m_active_scene != nullptr) {
+			m_active_scene->update(); // TODO: Put this in a new thread
 			m_active_scene->render();
 		} else {
 			spdlog::warn("No active scene");
