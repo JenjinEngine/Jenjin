@@ -98,9 +98,10 @@ void Scene::render() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 
 	for (GameObject* gobj : m_game_objects) {
+		// PERF: Cache the model matrix
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, gobj->transform.position);
-		model = glm::rotate(model, glm::radians(gobj->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(-gobj->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 		m_shader->set("u_model", model);
 
 		Mesh* mesh = &m_meshes[gobj->mesh_id];
