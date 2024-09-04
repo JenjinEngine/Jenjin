@@ -11,7 +11,7 @@ namespace Jenjin {
 class Engine {
 public:
 	Engine();
-	~Engine() = default;
+	~Engine();
 
 	void check_version(void);
 

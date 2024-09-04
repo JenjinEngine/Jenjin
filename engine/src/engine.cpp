@@ -21,6 +21,14 @@ Engine::Engine() {
 	#endif
 }
 
+Engine::~Engine() {
+	for (Scene* scene : m_scenes)
+		delete scene;
+
+	spdlog::info("Terminating GLFW");
+	glfwTerminate();
+}
+
 void Engine::check_version(void) {
 	spdlog::info("Jenjin engine version: {}", ENGINE_VERSION);
 }
@@ -93,9 +101,6 @@ void Engine::launch(int width, int height, const char* title) {
 		glfwPollEvents();
 		m_lastFrame = currentFrame;
 	}
-
-	spdlog::info("Terminating GLFW");
-	glfwTerminate();
 }
 
 void Engine::set_resized_callback(GLFWwindowsizefun callback) {

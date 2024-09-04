@@ -13,10 +13,17 @@
 using namespace Jenjin;
 
 Scene::~Scene() {
+	for (GameObject* gobj : m_gameobjects) {
+		spdlog::debug("Deleting gameobject: {}", gobj->name);
+		delete gobj;
+	}
+
+	spdlog::debug("Deleting buffers");
 	glDeleteVertexArrays(1, &m_vao);
 	glDeleteBuffers(1, &m_vbo);
 	glDeleteBuffers(1, &m_ebo);
 
+	spdlog::debug("Deleting shader");
 	delete m_shader;
 }
 

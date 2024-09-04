@@ -1,6 +1,7 @@
 #ifndef JENJIN_MESH_H
 #define JENJIN_MESH_H
 
+#include <vector>
 #include <glm/glm.hpp>
 
 namespace Jenjin {
