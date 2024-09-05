@@ -1,12 +1,15 @@
 #include <glad/glad.h>
 #include <GL/gl.h>
+#include <ios>
 #include <spdlog/spdlog.h>
+#include <sstream>
 #include <thread>
 
 #include "scene.h"
 #include "components/mesh.h"
 #include "gameobject.h"
 #include "glm/ext/matrix_transform.hpp"
+#include "lua.h"
 #include "shader.h"
 #include "state.h"
 
@@ -60,15 +63,15 @@ void Scene::build() {
 	glEnableVertexAttribArray(1);
 }
 
-void Scene::add_game_objects(std::vector<GameObject*> game_objects) {
+void Scene::add_gameobjects(std::vector<GameObject*> game_objects) {
 	this->m_gameobjects.reserve(game_objects.size());
 
 	for (GameObject* gobj : game_objects) {
-		add_game_object(gobj);
+		add_gameobject(gobj);
 	}
 }
 
-void Scene::add_game_object(GameObject* game_object) {
+void Scene::add_gameobject(GameObject* game_object) {
 	game_object->id = (int)m_gameobjects.size() - 1;
 	m_gameobjects.emplace_back(game_object);
 }
@@ -82,7 +85,6 @@ int Scene::add_mesh(MeshData mesh) {
 
 	Mesh l_mesh = { base_vertex, base_index, (int)vertices.size(), (int)indices.size() };
 	this->m_meshes.push_back(l_mesh);
-	/* spdlog::debug("bvtx: {} bindx: {} vtxcnt: {} idxcnt: {}", base_vertex, base_index, vertices.size(), indices.size()); */
 
 	m_vertices.insert(m_vertices.end(), vertices.begin(), vertices.end());
 	m_indices.insert(m_indices.end(), indices.begin(), indices.end());

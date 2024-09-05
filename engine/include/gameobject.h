@@ -14,6 +14,8 @@ struct GameObject {
 	void set_position(glm::vec3 position) { transform.position = position; }
 	void set_rotation(float rotation) { transform.rotation = rotation; }
 
+	glm::vec3 get_position() { return transform.position; }
+
 	void translate(glm::vec3 translation) { transform.position += translation; }
 	void rotate(float rotation) { transform.rotation += rotation; }
 

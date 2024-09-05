@@ -2,6 +2,7 @@
 
 #include "window.h"
 #include "GLFW/glfw3.h"
+#include "state.h"
 
 #define SHOW_ERROR(format) const char* error; glfwGetError(&error); spdlog::error(format, error);
 

@@ -10,4 +10,4 @@ target_include_directories(JenjinEngine
 				${Stb_INCLUDE_DIR}
 )
 
-target_link_libraries(JenjinEngine PRIVATE spdlog::spdlog glfw glad::glad glm::glm imgui::imgui fmt::fmt)
+target_link_libraries(JenjinEngine PRIVATE spdlog::spdlog glfw glad::glad glm::glm imgui::imgui fmt::fmt spdlog::spdlog PkgConfig::LUAJIT)

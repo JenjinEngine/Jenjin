@@ -4,6 +4,9 @@
 
 #include "engine.h"
 #include "GLFW/glfw3.h"
+#include "lua.h"
+#include "scene.h"
+#include "scriptmanager.h"
 #include "state.h"
 
 const char* ENGINE_VERSION = "0.0.1";
@@ -11,19 +14,23 @@ const char* ENGINE_VERSION = "0.0.1";
 using namespace Jenjin;
 
 Engine::Engine() {
+	#ifndef NDEBUG
+		spdlog::set_level(spdlog::level::debug);
+	#endif
+
 	this->m_active_scene = nullptr;
 	this->check_version();
 
 	this->m_window = Window();
 
-	#ifndef NDEBUG
-		spdlog::set_level(spdlog::level::debug);
-	#endif
+	ScriptManager* script_manager = new ScriptManager();
+	this->m_script_manager = script_manager;
+	JenjinState.script_manager = script_manager;
 }
 
 Engine::~Engine() {
 	for (Scene* scene : m_scenes)
-		delete scene;
+	delete scene;
 
 	spdlog::info("Terminating GLFW");
 	glfwTerminate();
@@ -34,9 +41,9 @@ void Engine::check_version(void) {
 }
 
 void Engine::add_scene(Scene* scene) {
-	#ifndef NDEBUG
+#ifndef NDEBUG
 	spdlog::debug("Adding scene with {} game objects", scene->m_gameobjects.size());
-	#endif
+#endif
 
 	m_scenes.emplace_back(scene);
 }
@@ -44,10 +51,13 @@ void Engine::add_scene(Scene* scene) {
 bool Engine::activate_scene(int index) {
 	if (index < m_scenes.size()) {
 		m_active_scene = m_scenes[index];
+		JenjinState.scene = m_active_scene;
 	} else {
 		spdlog::error("Scene index out of bounds");
 		return false;
 	}
+
+	JenjinState.script_manager->ready();
 
 	return true;
 }
@@ -80,12 +90,14 @@ void Engine::launch(int width, int height, const char* title) {
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 	});
 
+	JenjinState.script_manager->ready();
+
 	while (!glfwWindowShouldClose(window)) {
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		float currentFrame = glfwGetTime();
-		JenjinState.deltaTime = currentFrame - m_lastFrame;
+		JenjinState.dt = currentFrame - m_lastFrame;
 
 		if (m_render_callback != nullptr)
 			m_render_callback(this, window);

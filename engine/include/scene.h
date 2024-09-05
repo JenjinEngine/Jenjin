@@ -19,12 +19,13 @@ public:
 	void update();
 	void render();
 
-	void add_game_objects(std::vector<GameObject*> game_objects);
-	void add_game_object(GameObject* game_object);
+	void add_gameobjects(std::vector<GameObject*> game_objects);
+	void add_gameobject(GameObject* game_object);
 	int add_mesh(MeshData mesh);
 
 	GameObject* get_gameobject(int id);
 	GameObject* get_gameobject(std::string name);
+	GameObject* get_gameobject_lua(const std::string& name) { return get_gameobject(name); }
 
 	void build();
 

@@ -24,7 +24,7 @@ void Camera::processInput(GLFWwindow* window) {
 		m_changed_projection = true;
 	}
 
-	const float cameraSpeed = 2.5 * JenjinState.deltaTime;
+	const float cameraSpeed = 2.5 * JenjinState.dt;
 
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		m_cameraPos -= cameraRight * cameraSpeed;

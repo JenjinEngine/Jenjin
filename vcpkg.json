@@ -16,6 +16,7 @@
   "name": "jenjin",
   "version": "0.0.1",
   "dependencies": [
+    "fmt",
     {
       "name": "glad",
       "features": [
@@ -32,8 +33,9 @@
         "opengl3-binding"
       ]
     },
+    "luajit",
+    "sol2",
     "spdlog",
-    "stb",
-    "fmt"
+    "stb"
   ]
 }

@@ -8,108 +8,7 @@
 #include <spdlog/spdlog.h>
 #include <vector>
 
-int score = 0;
-const float PAD_SPEED = 0.65f;
-const glm::vec3 DEFAULT_BALL_SPEED = glm::vec3(0.6f, 0.8f, 0.0f);
-
 std::vector<GameObject*> to_clean = {};
-
-static bool playing = false;
-
-void update_ball(Jenjin::GameObject* ball, glm::vec3* velocity, Jenjin::GameObject* left_paddle, Jenjin::GameObject* right_paddle, GLFWwindow* window) {
-	if (!playing) {
-		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-			playing = true;
-		}
-
-		return;
-	}
-
-	// Rotation effect
-	if (velocity->x > 0) {
-		ball->rotate(180.0f * JenjinState.deltaTime);
-	} else {
-		ball->rotate(-180.0f * JenjinState.deltaTime);
-	}
-
-	// Check top and bottom bounds
-	if (ball->transform.position.y > 1.0f - 0.025f) {
-		velocity->y = -velocity->y;
-		ball->transform.position.y = 1.0f - 0.025f;
-	} else if (ball->transform.position.y < -1.0f + 0.025f) {
-		velocity->y = -velocity->y;
-		ball->transform.position.y = -1.0f + 0.025f;
-	}
-
-	// Bounce on paddles (invert x velocity)
-	// Left paddle
-	if (ball->transform.position.x < left_paddle->transform.position.x + 0.025f &&
-		ball->transform.position.y < left_paddle->transform.position.y + 0.15f &&
-		ball->transform.position.y > left_paddle->transform.position.y - 0.15f) {
-		ball->transform.position.x += 0.025f;
-		velocity->x = -velocity->x;
-	}
-
-	// Right paddle
-	if (ball->transform.position.x > right_paddle->transform.position.x - 0.025f &&
-		ball->transform.position.y < right_paddle->transform.position.y + 0.15f &&
-		ball->transform.position.y > right_paddle->transform.position.y - 0.15f) {
-		ball->transform.position.x -= 0.025f;
-		velocity->x = -velocity->x;
-	}
-
-	// Check left and right bounds
-	if (ball->transform.position.x > 1.0f || ball->transform.position.x < -1.0f) {
-		if (ball->transform.position.x > 1.0f) {
-			score++;
-			spdlog::info("Score: {}", score);
-		}
-		else {
-			spdlog::info("Game Over!");
-			score = 0;
-			playing = false;
-		}
-
-		ball->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
-		ball->set_rotation(0.0f);
-
-		left_paddle->set_position(glm::vec3(-0.9f, 0.0f, 0.0f));
-		right_paddle->set_position(glm::vec3(0.9f, 0.0f, 0.0f));
-
-		*velocity = DEFAULT_BALL_SPEED;
-	}
-
-	// Move ball
-	ball->translate(*velocity * JenjinState.deltaTime);
-}
-
-void update_paddle(Jenjin::GameObject* paddle, GLFWwindow* window) {
-	paddle->set_rotation(0.0f);
-
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		paddle->set_rotation(-2.0f);
-		paddle->translate(glm::vec3(0.0f, PAD_SPEED * JenjinState.deltaTime, 0.0f));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		paddle->set_rotation(2.0f);
-		paddle->translate(glm::vec3(0.0f, -PAD_SPEED * JenjinState.deltaTime, 0.0f));
-	}
-}
-
-void update_ai(Jenjin::GameObject* paddle, Jenjin::GameObject* ball) {
-	paddle->set_rotation(0.0f);
-
-	if (ball->transform.position.y > paddle->transform.position.y) {
-		paddle->set_rotation(2.0f);
-		paddle->translate(glm::vec3(0.0f, PAD_SPEED * JenjinState.deltaTime, 0.0f));
-	}
-
-	if (ball->transform.position.y < paddle->transform.position.y) {
-		paddle->set_rotation(-2.0f);
-		paddle->translate(glm::vec3(0.0f, -PAD_SPEED * JenjinState.deltaTime, 0.0f));
-	}
-}
 
 void main_menu_scene_update(Jenjin::Scene* scene) {
 	if (glfwGetKey(JenjinState.window->getWindow(), GLFW_KEY_SPACE) == GLFW_PRESS)
@@ -129,15 +28,7 @@ Scene* create_main_menu_scene(std::unique_ptr<Engine>& engine) {
 }
 
 void game_scene_update(Jenjin::Scene* scene) {
-	static GameObject* ball = scene->get_gameobject("ball");
-	static GameObject* leftPaddle = scene->get_gameobject("left_paddle");
-	static GameObject* rightPaddle = scene->get_gameobject("right_paddle");
-
-	static glm::vec3 ball_velocity = DEFAULT_BALL_SPEED;
-
-	update_ball(ball, &ball_velocity, leftPaddle, rightPaddle, JenjinState.window->getWindow());
-	update_paddle(leftPaddle, JenjinState.window->getWindow());
-	update_ai(rightPaddle, ball);
+	JenjinState.script_manager->update();
 }
 
 Scene* create_game_scene(std::unique_ptr<Engine>& engine) {
@@ -164,6 +55,7 @@ Scene* create_game_scene(std::unique_ptr<Engine>& engine) {
 
 int main(void) {
 	std::unique_ptr<Engine> engine = std::make_unique<Engine>();
+	JenjinState.script_manager->add_directory("pong/scripts");
 
 	Scene* main_menu_scene = create_main_menu_scene(engine);
 	Scene* game_scene = create_game_scene(engine);

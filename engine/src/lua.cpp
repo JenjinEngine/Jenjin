@@ -1,0 +1,124 @@
+#include "lua.h"
+#include "state.h"
+
+#include <GLFW/glfw3.h>
+
+#include <cstring>
+
+#include <fmt/color.h>
+#include <spdlog/spdlog.h>
+
+#include <glm/glm.hpp>
+
+#define BIND_ENUM(key) m_lua[#key] = key
+
+Lua::Lua() {
+	m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table);
+
+	{ // Logging
+		m_lua.set_function("print", [](const std::string& str) {
+			spdlog::debug("[{}] {}", fmt::format(fmt::fg(fmt::color::light_blue), "lua"), str);
+		});
+
+		m_lua.set_function("error", [](const std::string& str) {
+			spdlog::error("[{}] {}", fmt::format(fmt::fg(fmt::color::pale_violet_red), "lua"), str);
+		});
+
+		m_lua.set_function("warn", [](const std::string& str) {
+			spdlog::warn("[{}] {}", fmt::format(fmt::fg(fmt::color::light_yellow), "lua"), str);
+		});
+
+		m_lua.set_function("info", [](const std::string& str) {
+			spdlog::info("[{}] {}", fmt::format(fmt::fg(fmt::color::light_green), "lua"), str);
+		});
+
+		m_lua.set_function("debug", [](const std::string& str) {
+			spdlog::debug("[{}] {}", fmt::format(fmt::fg(fmt::color::light_blue), "lua"), str);
+		});
+
+		m_lua.set_function("trace", [](const std::string& str) {
+			spdlog::trace("[{}] {}", fmt::format(fmt::fg(fmt::color::light_blue), "lua"), str);
+		});
+	}
+
+	{ // GLM data type
+		// vec2
+		m_lua.new_usertype<glm::vec2>("vec2", sol::constructors<glm::vec2(), glm::vec2(float), glm::vec2(float, float)>(),
+																"x", &glm::vec2::x, "y", &glm::vec2::y);
+
+		// vec3
+		m_lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>(),
+																"x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
+	}
+
+	{ // Engine data types
+		// GameObject
+		m_lua.new_usertype<GameObject>("GameObject",
+																 "id", &GameObject::id,
+																 "name", &GameObject::name,
+																 "transform", &GameObject::transform,
+																 "mesh_id", &GameObject::mesh_id);
+
+		m_lua["GameObject"]["set_transform"] = &GameObject::set_transform;
+		m_lua["GameObject"]["translate"] = &GameObject::translate;
+		m_lua["GameObject"]["set_position"] = &GameObject::set_position;
+		m_lua["GameObject"]["set_rotation"] = &GameObject::set_rotation;
+		m_lua["GameObject"]["rotate"] = &GameObject::rotate;
+		m_lua["GameObject"]["fill_in_id"] = &GameObject::fill_in_id;
+		m_lua["GameObject"]["get_position"] = &GameObject::get_position;
+
+		// Transform
+		m_lua.new_usertype<Transform>("Transform",
+																"position", &Transform::position,
+																"rotation", &Transform::rotation);
+
+		// Mesh
+		m_lua.new_usertype<Mesh>("Mesh",
+													 "index_count", &Mesh::index_count,
+													 "base_vertex", &Mesh::base_vertex);
+
+		// MeshData
+		m_lua.new_usertype<MeshData>("MeshData",
+															 "vertices", &MeshData::vertices,
+															 "indices", &MeshData::indices);
+
+		// Scene
+		m_lua.new_usertype<Scene>("Scene",
+														"m_gameobjects", &Scene::m_gameobjects);
+
+		// Functions for Scene (called through state.scene:func())
+		m_lua["Scene"]["get_gameobject"] = &Scene::get_gameobject_lua;
+		m_lua["Scene"]["add_mesh"] = &Scene::add_mesh;
+		m_lua["Scene"]["build"] = &Scene::build;
+	}
+
+	{ // Globals
+		m_lua.new_usertype<State>("State",
+														"dt", &State::dt,
+														"window", &State::window,
+														"engine", &State::engine,
+														"scene", &State::scene);
+
+		m_lua["state"] = &JenjinState;
+		m_lua["s"] = &JenjinState;
+	}
+
+	// Bind GLFW key input function and key enum
+	m_lua.set_function("is_key_pressed", [](int key) {
+		return glfwGetKey(JenjinState.window->getWindow(), key) == GLFW_PRESS;
+	});
+
+	BIND_ENUM(GLFW_KEY_W);
+	BIND_ENUM(GLFW_KEY_S);
+	BIND_ENUM(GLFW_KEY_SPACE);
+
+	spdlog::debug("Bound keys to lua");
+}
+
+void Lua::script(const std::string& script) {
+	m_lua.script(script);
+}
+
+void Lua::script_file(const std::string& path) {
+	m_lua.script_file(path);
+}

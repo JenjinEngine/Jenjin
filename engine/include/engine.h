@@ -1,11 +1,12 @@
 #ifndef JENJIN_ENGINE_H
 #define JENJIN_ENGINE_H
 
-#include "scene.h"
+#include "scriptmanager.h"
 #include "window.h"
-#include <vector>
+#include "scene.h"
 
 #include <functional>
+#include <vector>
 
 namespace Jenjin {
 class Engine {
@@ -27,6 +28,8 @@ public:
 	void set_render_callback(std::function<void(Engine*, GLFWwindow*)> callback);
 
 private:
+	ScriptManager* m_script_manager = nullptr;
+
 	std::function<void(Engine*, GLFWwindow*)> m_render_callback;
 
 	Window m_window;

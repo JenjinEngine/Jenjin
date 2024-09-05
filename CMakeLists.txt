@@ -16,6 +16,10 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
+find_package(sol2 CONFIG REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LUAJIT REQUIRED IMPORTED_TARGET luajit)
+
 find_package(Stb REQUIRED)
 
 add_subdirectory(engine)
