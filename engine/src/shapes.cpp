@@ -7,10 +7,10 @@ MeshData Jenjin::shapes::create_quad(float width, float height) {
 
 	data.vertices = {
 		// Position, Texture coordinates
-		{ glm::vec3(-width / 2.0f, -height / 2.0f, 0.0f), glm::vec2(0.0f, 0.0f) },
-		{ glm::vec3(width / 2.0f, -height / 2.0f, 0.0f), glm::vec2(1.0f, 0.0f) },
-		{ glm::vec3(width / 2.0f, height / 2.0f, 0.0f), glm::vec2(1.0f, 1.0f) },
-		{ glm::vec3(-width / 2.0f, height / 2.0f, 0.0f), glm::vec2(0.0f, 1.0f) }
+		{ glm::vec2(-width / 2.0f, -height / 2.0f), glm::vec2(0.0f, 0.0f) },
+		{ glm::vec2(width / 2.0f, -height / 2.0f), glm::vec2(1.0f, 0.0f) },
+		{ glm::vec2(width / 2.0f, height / 2.0f), glm::vec2(1.0f, 1.0f) },
+		{ glm::vec2(-width / 2.0f, height / 2.0f), glm::vec2(0.0f, 1.0f) }
 	};
 
 	data.indices = {

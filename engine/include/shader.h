@@ -19,6 +19,7 @@ public:
 	void set(const char* name, bool value);
 	void set(const char* name, GLfloat *value);
 	void set(const char* name, glm::mat4 value);
+	void set(const char* name, glm::vec3 value);
 };
 }
 

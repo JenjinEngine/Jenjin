@@ -10,10 +10,12 @@
 
 #include <glm/glm.hpp>
 
+#include "shapes.h"
+
 #define BIND_ENUM(key) m_lua[#key] = key
 
 Lua::Lua() {
-	m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table);
+	m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table, sol::lib::package, sol::lib::math, sol::lib::os, sol::lib::io, sol::lib::string);
 
 	{ // Logging
 		m_lua.set_function("print", [](const std::string& str) {
@@ -53,7 +55,7 @@ Lua::Lua() {
 
 	{ // Engine data types
 		// GameObject
-		m_lua.new_usertype<GameObject>("GameObject",
+		m_lua.new_usertype<GameObject>("GameObject", sol::constructors<GameObject(MeshData, std::string)>(),
 																 "id", &GameObject::id,
 																 "name", &GameObject::name,
 																 "transform", &GameObject::transform,
@@ -65,12 +67,13 @@ Lua::Lua() {
 		m_lua["GameObject"]["set_rotation"] = &GameObject::set_rotation;
 		m_lua["GameObject"]["rotate"] = &GameObject::rotate;
 		m_lua["GameObject"]["fill_in_id"] = &GameObject::fill_in_id;
-		m_lua["GameObject"]["get_position"] = &GameObject::get_position;
 
 		// Transform
 		m_lua.new_usertype<Transform>("Transform",
 																"position", &Transform::position,
-																"rotation", &Transform::rotation);
+																"rotation", &Transform::rotation,
+																"scale", &Transform::scale,
+																"z_index", &Transform::z_index);
 
 		// Mesh
 		m_lua.new_usertype<Mesh>("Mesh",
@@ -88,7 +91,7 @@ Lua::Lua() {
 
 		// Functions for Scene (called through state.scene:func())
 		m_lua["Scene"]["get_gameobject"] = &Scene::get_gameobject_lua;
-		m_lua["Scene"]["add_mesh"] = &Scene::add_mesh;
+		m_lua["Scene"]["add_gameobject"] = &Scene::add_gameobject;
 		m_lua["Scene"]["build"] = &Scene::build;
 	}
 
@@ -108,11 +111,18 @@ Lua::Lua() {
 		return glfwGetKey(JenjinState.window->getWindow(), key) == GLFW_PRESS;
 	});
 
+	m_lua["create_quad"] = &Jenjin::shapes::create_quad;
+
 	BIND_ENUM(GLFW_KEY_W);
 	BIND_ENUM(GLFW_KEY_S);
 	BIND_ENUM(GLFW_KEY_SPACE);
 
 	spdlog::debug("Bound keys to lua");
+
+	// nilobj() returns lua nil
+	m_lua.set_function("nilgobj", []() {
+		return sol::nil;
+	});
 }
 
 void Lua::script(const std::string& script) {

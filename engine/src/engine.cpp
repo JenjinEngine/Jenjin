@@ -49,6 +49,8 @@ void Engine::add_scene(Scene* scene) {
 }
 
 bool Engine::activate_scene(int index) {
+	bool previous_scene_existed = m_active_scene != nullptr;
+
 	if (index < m_scenes.size()) {
 		m_active_scene = m_scenes[index];
 		JenjinState.scene = m_active_scene;
@@ -57,7 +59,8 @@ bool Engine::activate_scene(int index) {
 		return false;
 	}
 
-	JenjinState.script_manager->ready();
+	if (previous_scene_existed)
+		JenjinState.script_manager->ready();
 
 	return true;
 }

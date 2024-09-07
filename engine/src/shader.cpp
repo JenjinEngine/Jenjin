@@ -133,3 +133,7 @@ void Shader::set(const char* name, glm::mat4 value) {
 	glUniformMatrix4fv(glGetUniformLocation(ID, name), 1, GL_FALSE, glm::value_ptr(value));
 }
 
+void Shader::set(const char* name, glm::vec3 value) {
+	glUniform3fv(glGetUniformLocation(ID, name), 1, glm::value_ptr(value));
+}
+

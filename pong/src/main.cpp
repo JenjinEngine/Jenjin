@@ -35,8 +35,8 @@ Scene* create_game_scene(std::unique_ptr<Engine>& engine) {
 	// Create paddle objects
 	Jenjin::GameObject* leftPaddle = new GameObject(Jenjin::shapes::create_quad(0.05f, 0.3f), "left_paddle");
 	Jenjin::GameObject* rightPaddle = new GameObject(Jenjin::shapes::create_quad(0.05f, 0.3f), "right_paddle");
-	leftPaddle->set_position(glm::vec3(-0.9f, 0.0f, 0.0f));
-	rightPaddle->set_position(glm::vec3(0.9f, 0.0f, 0.0f));
+	leftPaddle->set_position(glm::vec2(-0.9f, 0.0f));
+	rightPaddle->set_position(glm::vec2(0.9f, 0.0f));
 
 	// Create ball object
 	Jenjin::GameObject* ball = new GameObject(Jenjin::shapes::create_quad(0.05f, 0.05f), "ball");

@@ -31,13 +31,21 @@ Scene::~Scene() {
 }
 
 void Scene::build() {
+	this->m_meshes.clear();
+  this->m_indices.clear();
+	this->m_vertices.clear();
+
+	static int count = 0;
+	spdlog::debug("Building scene {}", count++);
+
 	for (GameObject* gobj : m_gameobjects) {
 		MeshData meshdata = gobj->meshdata;
 		int mesh_id = add_mesh(meshdata);
 		gobj->mesh_id = mesh_id;
 	}
 
-	this->m_shader = new Shader("engine/shaders/vertex.glsl", "engine/shaders/fragment.glsl");
+	if (this->m_shader == nullptr)
+		this->m_shader = new Shader("engine/shaders/vertex.glsl", "engine/shaders/fragment.glsl");
 
 	spdlog::debug("Creating camera");
 	m_shader->use(); m_camera.setup_proj(*m_shader);
@@ -66,10 +74,10 @@ void Scene::build() {
 void Scene::add_gameobjects(std::vector<GameObject*> game_objects) {
 	this->m_gameobjects.reserve(game_objects.size());
 
-	for (GameObject* gobj : game_objects) {
+	for (GameObject* gobj : game_objects)
 		add_gameobject(gobj);
-	}
 }
+
 
 void Scene::add_gameobject(GameObject* game_object) {
 	game_object->id = (int)m_gameobjects.size() - 1;
@@ -117,12 +125,14 @@ void Scene::render() {
 	for (GameObject* gobj : m_gameobjects) {
 		// PERF: Cache the model matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, gobj->transform.position);
+		model = glm::translate(model, glm::vec3(gobj->transform.position, gobj->transform.z_index));
 		model = glm::rotate(model, glm::radians(-gobj->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 		m_shader->set("u_model", model);
+		m_shader->set("go_color", gobj->color);
 
 		Mesh* mesh = &m_meshes[gobj->mesh_id];
 
+		/* spdlog::debug("Renderring GOBJ with name `{}` and colour ({}, {}, {})", gobj->name, gobj->color.x, gobj->color.y, gobj->color.z); */
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, 0, mesh->base_vertex);
 	}
 }
