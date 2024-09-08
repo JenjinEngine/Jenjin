@@ -72,7 +72,9 @@ global record Mesh
 end
 
 global GLFW_KEY_W: number
+global GLFW_KEY_A: number
 global GLFW_KEY_S: number
+global GLFW_KEY_D: number
 global GLFW_KEY_SPACE: number
 
 global is_key_pressed: function(key: number): boolean
@@ -85,3 +87,7 @@ global function warn(_:string) end
 global function error(_:string) end
 global function debug(_:string) end
 global function trace(_:string) end
+
+global function normalize(v:vec2): vec2 end
+global function normalize_v2(v:vec2): vec2 end
+global function normalize_v3(v:vec3): vec3 end

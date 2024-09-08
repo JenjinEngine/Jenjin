@@ -1,20 +1,19 @@
 #include "lua.h"
 #include "state.h"
-
-#include <GLFW/glfw3.h>
+#include "shapes.h"
+#include "utils.h"
 
 #include <cstring>
 
+#include <GLFW/glfw3.h>
+
 #include <fmt/color.h>
+
+#include <spdlog/spdlog.h>
+#include <glm/glm.hpp>
 
 #include <sol/sol.hpp>
 #include <sol/raii.hpp>
-
-#include <spdlog/spdlog.h>
-
-#include <glm/glm.hpp>
-
-#include "shapes.h"
 
 #define BIND_ENUM(key) m_lua[#key] = key
 
@@ -61,6 +60,18 @@ Lua::Lua() {
 		// vec3
 		m_lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>(),
 																"x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
+
+		m_lua["normalize"] = [](const glm::vec2& vec) {
+			return glm::normalize(vec);
+		};
+
+		m_lua["normalize_v2"] = [](const glm::vec2& vec) {
+			return glm::normalize(vec);
+		};
+
+		m_lua["normalize_v3"] = [](const glm::vec3& vec) {
+			return glm::normalize(vec);
+		};
 	}
 
 	{ // Engine data types
@@ -81,6 +92,7 @@ Lua::Lua() {
 		/* m_lua["GameObject"]["new_lua"] = &GameObject::new_lua; */
 		m_lua["GameObject"]["set_transform"] = &GameObject::set_transform;
 		m_lua["GameObject"]["translate"] = &GameObject::translate;
+		m_lua["GameObject"]["rotate_towards"] = &GameObject::rotate_towards;
 		m_lua["GameObject"]["set_position"] = &GameObject::set_position;
 		m_lua["GameObject"]["set_rotation"] = &GameObject::set_rotation;
 		m_lua["GameObject"]["rotate"] = &GameObject::rotate;
@@ -129,10 +141,24 @@ Lua::Lua() {
 		return glfwGetKey(JenjinState.window->getWindow(), key) == GLFW_PRESS;
 	});
 
+	m_lua.set_function("get_mouse_position", []() {
+		double x, y;
+		int width, height;
+		glfwGetWindowSize(JenjinState.window->getWindow(), &width, &height);
+		glfwGetCursorPos(JenjinState.window->getWindow(), &x, &y);
+
+		y = height - y;
+
+		return glm::vec2(x, y);
+	});
+
 	m_lua["create_quad"] = &Jenjin::shapes::create_quad;
 
 	BIND_ENUM(GLFW_KEY_W);
 	BIND_ENUM(GLFW_KEY_S);
+	BIND_ENUM(GLFW_KEY_A);
+	BIND_ENUM(GLFW_KEY_D);
+
 	BIND_ENUM(GLFW_KEY_SPACE);
 
 	spdlog::debug("Bound keys to lua");
@@ -140,6 +166,13 @@ Lua::Lua() {
 	// nilobj() returns lua nil
 	m_lua.set_function("nilgobj", []() {
 		return sol::nil;
+	});
+
+	m_lua.set_function("screen_to_ndc", [](const glm::vec2& screen_pos) {
+		int window_width, window_height;
+		glfwGetWindowSize(JenjinState.window->getWindow(), &window_width, &window_height);
+		glm::vec2 ndc_pos = glm::vec2((screen_pos.x / window_width) * 2 - 1, (screen_pos.y / window_height) * 2 - 1);
+		return ndc_pos;
 	});
 }
 

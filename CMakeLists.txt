@@ -24,3 +24,4 @@ find_package(Stb REQUIRED)
 
 add_subdirectory(engine)
 add_subdirectory(pong)
+add_subdirectory(wave_defense)

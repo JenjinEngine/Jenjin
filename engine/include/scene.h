@@ -13,6 +13,7 @@
 namespace Jenjin {
 class Scene {
 public:
+	Scene() {}
 	Scene(std::vector<GameObject*> gameobjects) : m_gameobjects(gameobjects) {}
 	~Scene();
 
@@ -30,6 +31,8 @@ public:
 	void build();
 
 	void set_update_callback(std::function<void(Scene*)> update_function) { m_update_function = update_function; }
+
+	Camera m_camera;
 
 	#ifndef NDEBUG
 	std::vector<GameObject*> m_gameobjects;
@@ -50,8 +53,6 @@ private:
 
 	// Shader needs to be loaded in build, after the context is created
 	Shader* m_shader = nullptr;
-
-	Camera m_camera;
 };
 }
 

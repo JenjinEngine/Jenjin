@@ -53,6 +53,7 @@ bool Engine::activate_scene(int index) {
 	if (index < m_scenes.size()) {
 		m_active_scene = m_scenes[index];
 		JenjinState.scene = m_active_scene;
+		JenjinState.camera = &m_active_scene->m_camera;
 	} else {
 		spdlog::error("Scene index out of bounds");
 		return false;

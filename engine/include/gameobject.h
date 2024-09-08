@@ -4,8 +4,13 @@
 #include "components/transform.h"
 #include "components/mesh.h"
 
+#include <glm/trigonometric.hpp>
 #include <string>
 #include <spdlog/spdlog.h>
+#include <GLFW/glfw3.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/compatibility.hpp>
 
 namespace Jenjin {
 struct GameObject {
@@ -17,6 +22,13 @@ struct GameObject {
 
 	void translate(glm::vec2 translation) { transform.position += translation; }
 	void rotate(float rotation) { transform.rotation += rotation; }
+
+	void rotate_towards(const glm::vec2& target) {
+		glm::vec2 diff = target - transform.position;
+		float angle = -glm::atan2(diff.y, diff.x) - glm::radians(90.0f);
+		float degrees = glm::degrees(angle);
+		this->set_rotation(degrees);
+	}
 
 	void fill_in_id(int id) { this->id = id; }
 
