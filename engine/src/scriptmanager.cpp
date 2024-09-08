@@ -39,3 +39,10 @@ void ScriptManager::update() {
 	for (auto& [path, funcs] : m_script_functions)
 		funcs.update();
 }
+
+void ScriptManager::reload_scripts() {
+	for (auto& [path, funcs] : m_script_functions) {
+		lua.get_lua_state()->stack_clear();
+		this->add_script(path);
+	}
+}

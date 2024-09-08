@@ -4,7 +4,6 @@
 
 #include "engine.h"
 #include "GLFW/glfw3.h"
-#include "lua.h"
 #include "scene.h"
 #include "scriptmanager.h"
 #include "state.h"
@@ -15,7 +14,7 @@ using namespace Jenjin;
 
 Engine::Engine() {
 	#ifndef NDEBUG
-		spdlog::set_level(spdlog::level::debug);
+		spdlog::set_level(spdlog::level::trace);
 	#endif
 
 	this->m_active_scene = nullptr;

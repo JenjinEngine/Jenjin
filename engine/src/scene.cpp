@@ -1,17 +1,12 @@
 #include <glad/glad.h>
 #include <GL/gl.h>
-#include <ios>
 #include <spdlog/spdlog.h>
-#include <sstream>
-#include <thread>
 
 #include "scene.h"
 #include "components/mesh.h"
 #include "gameobject.h"
 #include "glm/ext/matrix_transform.hpp"
-#include "lua.h"
 #include "shader.h"
-#include "state.h"
 
 using namespace Jenjin;
 
@@ -124,15 +119,13 @@ void Scene::render() {
 
 	for (GameObject* gobj : m_gameobjects) {
 		// PERF: Cache the model matrix
-		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(gobj->transform.scale.x, gobj->transform.scale.y, 1.0f));
 		model = glm::translate(model, glm::vec3(gobj->transform.position, gobj->transform.z_index));
 		model = glm::rotate(model, glm::radians(-gobj->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 		m_shader->set("u_model", model);
 		m_shader->set("go_color", gobj->color);
 
 		Mesh* mesh = &m_meshes[gobj->mesh_id];
-
-		/* spdlog::debug("Renderring GOBJ with name `{}` and colour ({}, {}, {})", gobj->name, gobj->color.x, gobj->color.y, gobj->color.z); */
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh->index_count, GL_UNSIGNED_INT, 0, mesh->base_vertex);
 	}
 }

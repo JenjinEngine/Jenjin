@@ -13,10 +13,10 @@ void Camera::processInput(GLFWwindow* window) {
 		return;
 
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
-		m_zoom += 0.05f;
+		m_zoom += 0.05f * JenjinState.dt;
 		m_changed_projection = true;
 	} else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS) {
-		m_zoom -= 0.05f;
+		m_zoom -= 0.05f * JenjinState.dt;
 
 		if (m_zoom <= 0.05f)
 			m_zoom = 0.05f;

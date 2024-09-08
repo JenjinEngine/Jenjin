@@ -16,7 +16,7 @@ end
 global record Transform
 	position: vec2
 	rotation: number
-	scale: number
+	scale: vec2
 	z_index: number
 
 	new:function(self:Transform, position:vec2, rotation:number, scale:number, z_index:number): Transform
@@ -27,9 +27,10 @@ global record GameObject
 	name: string
 	transform: Transform
 	mesh_id: number
+	color: vec3
 
-	-- GameObject* placeholder = new GameObject(Jenjin::shapes::create_quad(0.5f, 0.5f), "placeholder");
-	new:function(self:GameObject, mesh:MeshData, name:string): GameObject
+	new:function(self:GameObject, mesh_data:MeshData, name:string): GameObject
+
 	set_transform:function(self:GameObject, transform:Transform)
 	translate:function(self:GameObject, translation:vec2)
 	set_position:function(self:GameObject, position:vec2)

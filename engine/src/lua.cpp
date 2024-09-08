@@ -6,6 +6,10 @@
 #include <cstring>
 
 #include <fmt/color.h>
+
+#include <sol/sol.hpp>
+#include <sol/raii.hpp>
+
 #include <spdlog/spdlog.h>
 
 #include <glm/glm.hpp>
@@ -15,6 +19,12 @@
 #define BIND_ENUM(key) m_lua[#key] = key
 
 Lua::Lua() {
+	// disable gc for now m_lua.is_gc_on()
+	spdlog::debug("Initializing Lua with GC enabled: {}", m_lua.is_gc_on());
+	m_lua.stop_gc();
+	m_lua.change_gc_mode_generational(0, 0);
+	spdlog::debug("Initialized Lua with GC enabled: {}", m_lua.is_gc_on());
+
 	m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table, sol::lib::package, sol::lib::math, sol::lib::os, sol::lib::io, sol::lib::string);
 
 	{ // Logging
@@ -55,12 +65,20 @@ Lua::Lua() {
 
 	{ // Engine data types
 		// GameObject
-		m_lua.new_usertype<GameObject>("GameObject", sol::constructors<GameObject(MeshData, std::string)>(),
+		// use the `new_lua` method on the GameObject class to create a new object (it needs to be heap allocated)
+		m_lua.new_usertype<GameObject>("GameObject",
+																 sol::factories([](const MeshData& meshData, const std::string& name) {
+																 GameObject* obj = new GameObject(meshData, name);
+																 return std::shared_ptr<GameObject>(obj); // return a shared_ptr to the object (which is on the heap)
+																 }),
+
 																 "id", &GameObject::id,
 																 "name", &GameObject::name,
 																 "transform", &GameObject::transform,
-																 "mesh_id", &GameObject::mesh_id);
+																 "mesh_id", &GameObject::mesh_id,
+																 "color", &GameObject::color);
 
+		/* m_lua["GameObject"]["new_lua"] = &GameObject::new_lua; */
 		m_lua["GameObject"]["set_transform"] = &GameObject::set_transform;
 		m_lua["GameObject"]["translate"] = &GameObject::translate;
 		m_lua["GameObject"]["set_position"] = &GameObject::set_position;

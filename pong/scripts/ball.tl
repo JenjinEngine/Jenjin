@@ -1,8 +1,12 @@
+--require("pong.scripts.utils")
+utils = require("pong.scripts.utils")
+
 local ball, left_paddle, right_paddle = nilgobj(), nilgobj(), nilgobj()
 local playing: boolean = false
 local score: number = 0
+local time: number = 0
 
-local DEFAULT_BALL_SPEED: vec2 = vec2:new(0.6, 0.9)
+local DEFAULT_BALL_SPEED: vec2 = vec2:new(1.1, 1.35)
 local velocity: vec2 = DEFAULT_BALL_SPEED
 
 global function ready()
@@ -14,6 +18,11 @@ global function ready()
 end
 
 global function update()
+	-- Make ball rainbow
+	time = time + s.dt
+	r, g, b = utils.hsv_to_rgb((time * 25) % 360, 1, 1)
+	ball.color = vec3:new(r, g, b)
+
 	if not ball or not left_paddle or not right_paddle then
 		error("Ball script: ball, left paddle, or right paddle not found")
 		return

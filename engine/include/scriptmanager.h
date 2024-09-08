@@ -19,6 +19,8 @@ public:
 	void add_script(const std::string& path);
 	void add_directory(const std::string& path);
 
+	void reload_scripts();
+
 	void ready();
 	void update();
 

@@ -2,7 +2,6 @@
 #define JENJIN_STATE_H
 
 #include "engine.h"
-#include "lua.h"
 #include "scene.h"
 #include "scriptmanager.h"
 #include "window.h"

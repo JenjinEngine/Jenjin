@@ -20,7 +20,7 @@ struct GameObject {
 
 	void fill_in_id(int id) { this->id = id; }
 
-	Transform transform = { glm::vec2(0.0f, 0.0f), 0.0f };
+	Transform transform = { glm::vec2(0.0f, 0.0f) };
 	MeshData meshdata;
 
 	std::string name;
