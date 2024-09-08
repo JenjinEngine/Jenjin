@@ -14,7 +14,7 @@ namespace Jenjin {
 class Scene {
 public:
 	Scene() {}
-	Scene(std::vector<GameObject*> gameobjects) : m_gameobjects(gameobjects) {}
+	Scene(std::vector<GameObject*> gameobjects);
 	~Scene();
 
 	void update();

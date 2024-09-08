@@ -10,6 +10,10 @@
 
 using namespace Jenjin;
 
+Scene::Scene(std::vector<GameObject*> gameobjects) {
+	this->add_gameobjects(gameobjects);
+}
+
 Scene::~Scene() {
 	for (GameObject* gobj : m_gameobjects) {
 		spdlog::debug("Deleting gameobject: {}", gobj->name);
@@ -75,7 +79,7 @@ void Scene::add_gameobjects(std::vector<GameObject*> game_objects) {
 
 
 void Scene::add_gameobject(GameObject* game_object) {
-	game_object->id = (int)m_gameobjects.size() - 1;
+	game_object->id = (int)m_gameobjects.size();
 	m_gameobjects.emplace_back(game_object);
 }
 

@@ -1,7 +1,7 @@
 #include "lua.h"
 #include "state.h"
-#include "shapes.h"
 #include "utils.h"
+#include "shapes.h"
 
 #include <cstring>
 
@@ -142,14 +142,9 @@ Lua::Lua() {
 	});
 
 	m_lua.set_function("get_mouse_position", []() {
-		double x, y;
-		int width, height;
-		glfwGetWindowSize(JenjinState.window->getWindow(), &width, &height);
-		glfwGetCursorPos(JenjinState.window->getWindow(), &x, &y);
-
-		y = height - y;
-
-		return glm::vec2(x, y);
+		glm::vec2 pos = JenjinState.mouse_pos;
+		pos.y = JenjinState.window_size.y - pos.y;
+		return pos;
 	});
 
 	m_lua["create_quad"] = &Jenjin::shapes::create_quad;
@@ -168,12 +163,7 @@ Lua::Lua() {
 		return sol::nil;
 	});
 
-	m_lua.set_function("screen_to_ndc", [](const glm::vec2& screen_pos) {
-		int window_width, window_height;
-		glfwGetWindowSize(JenjinState.window->getWindow(), &window_width, &window_height);
-		glm::vec2 ndc_pos = glm::vec2((screen_pos.x / window_width) * 2 - 1, (screen_pos.y / window_height) * 2 - 1);
-		return ndc_pos;
-	});
+	m_lua["screen_to_ndc"] = &screen_to_ndc;
 }
 
 void Lua::script(const std::string& script) {

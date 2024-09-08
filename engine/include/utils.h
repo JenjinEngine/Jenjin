@@ -1,8 +1,4 @@
-#ifndef JENJI_UTILS_H
-#define JENJI_UTILS_H
-
 #include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
 
-glm::vec2 screen_to_ndc(glm::vec2 screen_position, glm::vec2 window_size);
-
-#endif // JENJI_UTILS_H
+glm::vec2 screen_to_ndc(const glm::vec2& screen_pos);

@@ -16,6 +16,9 @@ struct State {
 	ScriptManager* script_manager = nullptr;
 	Scene* scene = nullptr;
 	Camera* camera = nullptr;
+
+	glm::vec2 window_size = glm::vec2(0.0f, 0.0f);
+	glm::vec2 mouse_pos = glm::vec2(0.0f, 0.0f);
 } extern JenjinState;
 
 #endif // JENJIN_STATE_H

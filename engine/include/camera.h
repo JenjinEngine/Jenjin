@@ -10,12 +10,11 @@
 namespace Jenjin {
 class Camera {
 private:
-	glm::mat4 m_view = glm::lookAt(m_cameraPos, m_cameraPos + cameraFront, cameraUp);
-
-	float m_zoom = 1.0f;
+	glm::mat4 m_view = glm::lookAt(position, position + cameraFront, cameraUp);
 
 public:
-	glm::vec3 m_cameraPos = glm::vec3(0.0f, 0.0f, 100.0f);
+	glm::vec3 position = glm::vec3(0.0f, 0.0f, 100.0f);
+	float zoom = 1.0f;
 
 	Camera();
 

@@ -1,9 +1,13 @@
 #include <glad/glad.h>
 #include <GL/gl.h>
 #include <spdlog/spdlog.h>
+#include <GLFW/glfw3.h>
+
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 #include "engine.h"
-#include "GLFW/glfw3.h"
 #include "scene.h"
 #include "scriptmanager.h"
 #include "state.h"
@@ -84,6 +88,7 @@ void Engine::launch(int width, int height, const char* title) {
 
 	// handle window resize
 	m_window.setResizeCallback([](GLFWwindow* window, int width, int height) {
+		JenjinState.window_size = glm::vec2(width, height);
 		glViewport(0, 0, width, height);
 	});
 
@@ -93,9 +98,33 @@ void Engine::launch(int width, int height, const char* title) {
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 	});
 
+	m_window.setMouseCallback([](GLFWwindow* window, double xpos, double ypos) {
+		JenjinState.mouse_pos = glm::vec2(xpos, ypos);
+	});
+
 	JenjinState.script_manager->ready();
 
+	// Ready ImGui
+	IMGUI_CHECKVERSION();
+	spdlog::debug("ImGui version: {}", IMGUI_VERSION);
+	ImGui::CreateContext();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = nullptr;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+	// initiate imgui_glfw and imgui_opengl3
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 460");
+
+	glViewport(0, 0, width, height);
+	JenjinState.window_size = glm::vec2(width, height);
+
 	while (!glfwWindowShouldClose(window)) {
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -112,9 +141,21 @@ void Engine::launch(int width, int height, const char* title) {
 			spdlog::warn("No active scene");
 		}
 
+		// Handle DT logic
+		m_lastFrame = currentFrame;
+
+#ifndef NDEBUG
+		if (m_debug_callback != nullptr)
+			m_debug_callback(this, window);
+#endif
+
+		ImGui::EndFrame();
+		ImGui::Render();
+
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		m_lastFrame = currentFrame;
 	}
 }
 
