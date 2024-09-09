@@ -9,11 +9,6 @@
 using namespace Jenjin;
 
 bool Window::NewWindow(int width, int height, const char* title) {
-	if (!glfwInit()) {
-		SHOW_ERROR("Failed to initialize GLFW: {}");
-		return false;
-	}
-
 	// Create a windowed mode window and its OpenGL context
 	m_window = glfwCreateWindow(width, height, title, NULL, NULL);
 	if (!m_window) {

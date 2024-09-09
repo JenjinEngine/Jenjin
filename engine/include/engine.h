@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <glm/fwd.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
 #include <imgui.h>
@@ -82,6 +83,7 @@ private:
 			ImGui::Indent();
 
 			for (GameObject* game_object : engine->m_active_scene->m_gameobjects) {
+				ImGui::PushID(game_object->id);
 				if (ImGui::CollapsingHeader(game_object->name.c_str())) {
 					ImGui::Indent();
 
@@ -95,8 +97,11 @@ private:
 					if (ImGui::Button("Reset##y"))
 						game_object->transform.position.y = 0.0f;
 
+					ImGui::InputFloat3("Colour", glm::value_ptr(game_object->color));
+
 					ImGui::Unindent();
 				}
+				ImGui::PopID();
 			}
 
 			ImGui::Unindent();
