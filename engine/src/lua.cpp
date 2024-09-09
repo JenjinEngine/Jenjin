@@ -3,12 +3,15 @@
 #include "utils.h"
 #include "shapes.h"
 
+#include <cctype>
 #include <cstring>
 
 #include <GLFW/glfw3.h>
 
 #include <fmt/color.h>
 
+#include <fmt/format.h>
+#include <iostream>
 #include <spdlog/spdlog.h>
 #include <glm/glm.hpp>
 
@@ -83,20 +86,31 @@ Lua::Lua() {
 																 return std::shared_ptr<GameObject>(obj); // return a shared_ptr to the object (which is on the heap)
 																 }),
 
-																 "id", &GameObject::id,
-																 "name", &GameObject::name,
 																 "transform", &GameObject::transform,
+																 "meshdata", &GameObject::meshdata,
+																 "name", &GameObject::name,
+																 "color", &GameObject::color,
 																 "mesh_id", &GameObject::mesh_id,
-																 "color", &GameObject::color);
+																 "id", &GameObject::id,
 
-		/* m_lua["GameObject"]["new_lua"] = &GameObject::new_lua; */
-		m_lua["GameObject"]["set_transform"] = &GameObject::set_transform;
-		m_lua["GameObject"]["translate"] = &GameObject::translate;
-		m_lua["GameObject"]["rotate_towards"] = &GameObject::rotate_towards;
-		m_lua["GameObject"]["set_position"] = &GameObject::set_position;
-		m_lua["GameObject"]["set_rotation"] = &GameObject::set_rotation;
-		m_lua["GameObject"]["rotate"] = &GameObject::rotate;
-		m_lua["GameObject"]["fill_in_id"] = &GameObject::fill_in_id;
+																 "set_transform", &GameObject::set_transform,
+																 "set_position", &GameObject::set_position,
+																 "set_rotation", &GameObject::set_rotation,
+																 "set_scale", &GameObject::set_scale,
+																 "set_color", &GameObject::set_color,
+																 "set_mesh_id", &GameObject::set_mesh_id,
+																 "set_id", &GameObject::set_id,
+																 "set_name", &GameObject::set_name_lua,
+																 "set_meshdata", &GameObject::set_meshdata,
+
+																 "translate", &GameObject::translate,
+																 "rotate", &GameObject::rotate,
+																 "scale", &GameObject::scale,
+
+																 "rotate_towards", &GameObject::rotate_towards,
+																 "rotation_towards", &GameObject::rotation_towards,
+																 "distance_to", &GameObject::distance_to
+																 );
 
 		// Transform
 		m_lua.new_usertype<Transform>("Transform",
@@ -149,15 +163,6 @@ Lua::Lua() {
 
 	m_lua["create_quad"] = &Jenjin::shapes::create_quad;
 
-	BIND_ENUM(GLFW_KEY_W);
-	BIND_ENUM(GLFW_KEY_S);
-	BIND_ENUM(GLFW_KEY_A);
-	BIND_ENUM(GLFW_KEY_D);
-
-	BIND_ENUM(GLFW_KEY_SPACE);
-
-	spdlog::debug("Bound keys to lua");
-
 	// nilobj() returns lua nil
 	m_lua.set_function("nilgobj", []() {
 		return sol::nil;
@@ -172,4 +177,20 @@ void Lua::script(const std::string& script) {
 
 void Lua::script_file(const std::string& path) {
 	m_lua.script_file(path);
+}
+
+void Lua::fill_in_glfw() {
+	spdlog::debug("Attempting to fill in GLFW key bindings");
+	for (int i = GLFW_KEY_0; i <= GLFW_KEY_9; i++) {
+		const char* name = glfwGetKeyName(i, 0);
+		auto key = fmt::format("KEY_{}", name);
+		m_lua[key] = i;
+	}
+
+	for (int i = GLFW_KEY_A; i <= GLFW_KEY_Z; i++) {
+		const char* name = glfwGetKeyName(i, 0);
+		char upper = std::toupper(name[0]);
+		auto key = fmt::format("KEY_{}", upper);
+		m_lua[key] = i;
+	}
 }

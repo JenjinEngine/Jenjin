@@ -79,7 +79,7 @@ void Scene::add_gameobjects(std::vector<GameObject*> game_objects) {
 
 
 void Scene::add_gameobject(GameObject* game_object) {
-	game_object->id = (int)m_gameobjects.size();
+	game_object->set_id((int)m_gameobjects.size());
 	m_gameobjects.emplace_back(game_object);
 }
 

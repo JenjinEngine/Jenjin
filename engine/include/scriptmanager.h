@@ -7,8 +7,8 @@
 #include <unordered_map>
 
 struct ScriptFunctions {
-	sol::function update;
-	sol::function ready;
+	sol::protected_function update;
+	sol::protected_function ready;
 };
 
 namespace Jenjin {
@@ -18,6 +18,8 @@ public:
 
 	void add_script(const std::string& path);
 	void add_directory(const std::string& path);
+
+	void fill_in_glfw();
 
 	void reload_scripts();
 

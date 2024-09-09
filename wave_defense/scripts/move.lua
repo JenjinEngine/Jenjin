@@ -13,19 +13,19 @@ function update()
 
    local direction = vec2:new(0, 0)
 
-   if is_key_pressed(GLFW_KEY_W) then
+   if is_key_pressed(KEY_W) then
       direction.y = 1
    end
 
-   if is_key_pressed(GLFW_KEY_A) then
+   if is_key_pressed(KEY_A) then
       direction.x = -1
    end
 
-   if is_key_pressed(GLFW_KEY_S) then
+   if is_key_pressed(KEY_S) then
       direction.y = -1
    end
 
-   if is_key_pressed(GLFW_KEY_D) then
+   if is_key_pressed(KEY_D) then
       direction.x = 1
    end
 

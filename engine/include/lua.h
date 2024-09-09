@@ -8,6 +8,10 @@ class Lua {
 public:
 	Lua();
 
+	// This function is for binding GLFW specific details that
+	// can only be filled in after GLFW is initialised.
+	void fill_in_glfw();
+
 	void script(const std::string& script);
 	void script_file(const std::string& path);
 

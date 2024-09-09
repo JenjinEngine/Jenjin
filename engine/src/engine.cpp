@@ -16,6 +16,8 @@ const char* ENGINE_VERSION = "0.0.1";
 
 using namespace Jenjin;
 
+#define SHOW_ERROR(format) const char* error; glfwGetError(&error); spdlog::error(format, error);
+
 Engine::Engine() {
 	#ifndef NDEBUG
 		spdlog::set_level(spdlog::level::trace);
@@ -29,6 +31,11 @@ Engine::Engine() {
 	ScriptManager* script_manager = new ScriptManager();
 	this->m_script_manager = script_manager;
 	JenjinState.script_manager = script_manager;
+
+	if (!glfwInit()) {
+		SHOW_ERROR("Failed to initialize GLFW: {}");
+		throw std::runtime_error("Failed to initialize GLFW");
+	}
 }
 
 Engine::~Engine() {
@@ -81,8 +88,9 @@ void Engine::launch(int width, int height, const char* title) {
 		return;
 	}
 
-	for (Scene* scene : m_scenes)
+	for (Scene* scene : m_scenes) {
 		scene->build();
+	}
 
 	GLFWwindow* window = this->m_window.getWindow();
 
@@ -119,6 +127,8 @@ void Engine::launch(int width, int height, const char* title) {
 
 	glViewport(0, 0, width, height);
 	JenjinState.window_size = glm::vec2(width, height);
+
+	JenjinState.script_manager->fill_in_glfw();
 
 	while (!glfwWindowShouldClose(window)) {
 		ImGui_ImplOpenGL3_NewFrame();

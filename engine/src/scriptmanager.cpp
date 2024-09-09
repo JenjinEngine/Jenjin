@@ -3,7 +3,10 @@
 #include <fstream>
 #include <filesystem>
 
+#include <sol/forward.hpp>
 #include <spdlog/spdlog.h>
+
+#include <fmt/color.h>
 
 using namespace Jenjin;
 
@@ -31,13 +34,27 @@ void ScriptManager::add_directory(const std::string& path) {
 }
 
 void ScriptManager::ready() {
-	for (auto& [path, funcs] : m_script_functions)
-		funcs.ready();
+	for (auto& [path, funcs] : m_script_functions) {
+		sol::protected_function_result result = funcs.ready();
+		if (!result.valid()) {
+			sol::error err = result;
+			spdlog::error("[{}] {}\n", fmt::format(fmt::fg(fmt::color::pale_violet_red), "lua"), err.what());
+		}
+	}
 }
 
 void ScriptManager::update() {
-	for (auto& [path, funcs] : m_script_functions)
-		funcs.update();
+	for (auto& [path, funcs] : m_script_functions) {
+		sol::protected_function_result result = funcs.update();
+		if (!result.valid()) {
+			sol::error err = result;
+			spdlog::error("[{}] {}\n", fmt::format(fmt::fg(fmt::color::pale_violet_red), "lua"), err.what());
+		}
+	}
+}
+
+void ScriptManager::fill_in_glfw() {
+	lua.fill_in_glfw();
 }
 
 void ScriptManager::reload_scripts() {
