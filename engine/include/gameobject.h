@@ -25,9 +25,9 @@ struct GameObject {
 
 	void rotate_towards(const glm::vec2& target) {
 		glm::vec2 diff = target - transform.position;
-		float angle = -glm::atan2(diff.y, diff.x) - glm::radians(90.0f);
-		float degrees = glm::degrees(angle);
-		this->set_rotation(degrees);
+		float angle = glm::atan(diff.y, diff.x);
+		float degrees = glm::mod(glm::degrees(-angle), 360.0f);
+		this->transform.rotation = degrees;
 	}
 
 	void fill_in_id(int id) { this->id = id; }
