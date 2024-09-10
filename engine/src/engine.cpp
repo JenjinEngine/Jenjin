@@ -70,10 +70,37 @@ Engine::Engine() {
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		}
+
+		// key to toggle wireframe
+		static bool wireframe = false;
+		if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+			wireframe = !wireframe;
+			glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+		}
 	});
 }
 
-void Engine::Launch(int width, int height, const char* title) {
+void Engine::add_scene(Scene* scene, bool active) {
+	m_scenes.push_back(scene);
+
+	if (active)
+		m_active_scene = scene;
+}
+
+void Engine::activate_scene(unsigned int index) {
+	if (index < 0 || index >= m_scenes.size()) {
+		spdlog::error("Invalid scene index: {}", index);
+		return;
+	}
+
+	m_active_scene = m_scenes[index];
+}
+
+void Engine::launch(int width, int height, const char* title) {
+	// Build all the scenes
+	for (auto& scene : m_scenes)
+	scene->build();
+
 	// Setup the window to be the desired size and title
 	// instead of the hidden window
 	glfwSetWindowSize(window, width, height);
@@ -87,12 +114,27 @@ void Engine::Launch(int width, int height, const char* title) {
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// Render the active scene
+		if (m_active_scene) {
+			m_active_scene->render();
+		} else {
+			spdlog::warn("No active scene");
+		}
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	spdlog::debug("Deinitializing Jenjin {}", VERSION);
 
+	for (auto& scene : m_scenes)
+	delete scene;
+
 	spdlog::debug("Terminating GLFW");
 	glfwTerminate();
+
+	/* spdlog::debug("Deinitializing Jenjin {}", VERSION); */
+
+	/* spdlog::debug("Terminating GLFW"); */
+	/* glfwTerminate(); */
 }
