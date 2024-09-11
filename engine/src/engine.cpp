@@ -3,7 +3,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include "engine.h"
+#include "imgui_internal.h"
 
 using namespace Jenjin;
 
@@ -80,6 +85,19 @@ Engine_t::Engine_t() {
 			glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
 		}
 	});
+
+	IMGUI_CHECKVERSION();
+	spdlog::debug("ImGui Version: {}", IMGUI_VERSION);
+
+	ImGui::CreateContext();
+
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 460");
+
+	ImGui::StyleColorsDark();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 }
 
 void Engine_t::add_scene(Scene* scene, bool active) {
@@ -126,6 +144,22 @@ void Engine_t::launch(int width, int height, const char* title) {
 		} else {
 			spdlog::warn("No active scene");
 		}
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+			// Render ImGui windows
+		ImGui::Begin("Jenjin");
+		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+		ImGui::Text("Scene count: %d", (int)m_scenes.size());
+		ImGui::Text("Frame time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+		ImGui::End();
+
+		this->m_active_scene->debug_menu();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

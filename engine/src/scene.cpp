@@ -1,7 +1,12 @@
 #include "scene.h"
+#include "ext/matrix_transform.hpp"
+#include "fwd.hpp"
+#include "gameobject.h"
+#include "gtc/type_ptr.hpp"
 #include "mesh.h"
 
 #include <spdlog/spdlog.h>
+#include <imgui.h>
 
 using namespace Jenjin;
 
@@ -31,12 +36,15 @@ void Scene::resize(GLFWwindow* window, int width, int height) {
 	if (this->m_resize_callback)
 		this->m_resize_callback(this, window, width, height);
 
-  glViewport(0, 0, width, height);
+	glViewport(0, 0, width, height);
 	m_default_camera.set_aspect_ratio((float)width / (float)height);
 	m_default_camera.setup_proj(m_default_shader);
 }
 
 void Scene::build() {
+	// Clear the mesh references
+	this->m_mesh_references.clear();
+
 	spdlog::debug("Building scene buffers");
 	std::vector<unsigned int> scene_indices;
 	std::vector<Vertex> scene_vertices;
@@ -111,13 +119,93 @@ void Scene::render() {
 	for (auto& gobj : m_game_objects) {
 		auto& meshref = m_mesh_references[gobj->mesh_id];
 
-		glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(gobj->transform.scale.x, gobj->transform.scale.y, 1.0f));
-		model = glm::translate(model, glm::vec3(gobj->transform.position.x, gobj->transform.position.y, 0.0f));
+		glm::mat4 model = glm::mat4(1.0f);
+
+		model = glm::translate(model, glm::vec3(gobj->transform.position.x * 0.1f, gobj->transform.position.y * 0.1f, 0.0f));
 		model = glm::rotate(model, -glm::radians(gobj->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(gobj->transform.scale.x, gobj->transform.scale.y, 1.0f));
 
 		m_default_shader.set("u_model", model);
 
+		glm::vec3 color = gobj->color;
+		m_default_shader.set("u_color", color);
+
 		glDrawElementsBaseVertex(GL_TRIANGLES, meshref.index_count, GL_UNSIGNED_INT, 0, meshref.base_vertex);
+	}
+}
+
+void Scene::debug_menu(bool separate_window) {
+	if (separate_window) {
+		ImGui::Begin("Scene");
+	} else {
+		if (!ImGui::CollapsingHeader("Scene")) {
+			return;
+		}
+
+		ImGui::Indent();
+	}
+
+	ImGui::Text("Game objects: %d", (int)this->m_game_objects.size());
+	ImGui::Text("Mesh references: %d", (int)this->m_mesh_references.size());
+
+	if (ImGui::TreeNode("Utilities")) {
+		if (ImGui::TreeNode("Create")) {
+			static char game_object_name[128] = { 0 };
+			ImGui::InputText("GameObject name", game_object_name, sizeof(game_object_name));
+
+			if (ImGui::Button("Create GameObject")) {
+				auto go = std::make_shared<GameObject>(game_object_name);
+				this->add_gameobject(go);
+			}
+
+			ImGui::TreePop();
+		}
+
+		if (ImGui::Button("Build scene")) {
+			this->build();
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Game objects")) {
+		int it = 0;
+		for (auto& go : this->m_game_objects) {
+			ImGui::PushID(it++);
+
+			if (ImGui::CollapsingHeader(go->name.c_str())) {
+				ImGui::Indent();
+				if (ImGui::TreeNode("Transform")) {
+					ImGui::DragFloat2("Position", glm::value_ptr(go->transform.position));
+					ImGui::DragFloat("Rotation", &go->transform.rotation);
+					ImGui::DragFloat2("Scale", glm::value_ptr(go->transform.scale));
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Color")) {
+					ImGui::ColorEdit3("Color", glm::value_ptr(go->color));
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Mesh")) {
+					ImGui::Text("Vertices: %d", (int)go->mesh.vertices.size());
+					ImGui::Text("Indices: %d", (int)go->mesh.indices.size());
+					ImGui::Text("Mesh ID: %d", go->mesh_id);
+					ImGui::TreePop();
+				}
+
+				ImGui::Unindent();
+			}
+			ImGui::PopID();
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (separate_window) {
+		ImGui::End();
+	} else {
+		ImGui::Unindent();
 	}
 }
 
@@ -129,4 +217,14 @@ void Scene::add_gameobjects(std::vector<std::shared_ptr<GameObject>> game_object
 	for (auto& go : game_objects) {
 		this->add_gameobject(go);
 	}
+}
+
+std::shared_ptr<GameObject> Scene::get_gameobject(std::string name) {
+	for (auto& go : this->m_game_objects) {
+		if (go->name == name) {
+			return go;
+		}
+	}
+
+	return nullptr;
 }

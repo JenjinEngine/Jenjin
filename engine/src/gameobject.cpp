@@ -37,7 +37,7 @@ void GameObject::set_name(std::string name) { this->name = name; }
 
 // Modifiers
 void GameObject::translate(glm::vec2 translation) { transform.position += translation; }
-void GameObject::rotate(float rotation) { transform.rotation += rotation; }
+void GameObject::rotate(float rotation) { transform.rotation += rotation; transform.rotation = glm::mod(transform.rotation, 360.0f); }
 void GameObject::scale(glm::vec2 scale) { transform.scale *= scale; }
 
 // Utility

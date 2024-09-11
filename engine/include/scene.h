@@ -34,9 +34,14 @@ public:
 	void update();
 	void render();
 
+	// Debugging
+	void debug_menu(bool separate_window = true);
+
 	// Adders
 	void add_gameobject(std::shared_ptr<GameObject> game_object);
 	void add_gameobjects(std::vector<std::shared_ptr<GameObject>> game_objects);
+
+	std::shared_ptr<GameObject> get_gameobject(std::string name);
 
 	// Callback management
 	void set_update_callback(std::function<void(Scene&)> callback);
