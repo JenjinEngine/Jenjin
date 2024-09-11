@@ -25,6 +25,17 @@ Scene::~Scene() {
 	spdlog::debug("Scene destroyed");
 }
 
+void Scene::resize(GLFWwindow* window, int width, int height) {
+	spdlog::debug("Resizing scene to {}x{}", width, height);
+
+	if (this->m_resize_callback)
+		this->m_resize_callback(this, window, width, height);
+
+  glViewport(0, 0, width, height);
+	m_default_camera.set_aspect_ratio((float)width / (float)height);
+	m_default_camera.setup_proj(m_default_shader);
+}
+
 void Scene::build() {
 	spdlog::debug("Building scene buffers");
 	std::vector<unsigned int> scene_indices;

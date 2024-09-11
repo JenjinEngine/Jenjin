@@ -2,16 +2,17 @@
 #define JENJIN_ENGINE_H
 
 #include "scene.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Jenjin {
 // The main engine class that manages the game loop
 // and scene management.
-class Engine {
+class Engine_t {
 public:
 	// RAII pattern
-	Engine();
-	~Engine() = default;
+	Engine_t();
+	~Engine_t() = default;
 
 	// Scene management
 	void add_scene(Scene* scene, bool active = false);
@@ -25,7 +26,7 @@ private:
 
 	std::vector<Scene*> m_scenes;
 	Scene* m_active_scene;
-};
+} extern Engine;
 }
 
 #endif // JENJIN_ENGINE_H

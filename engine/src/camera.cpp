@@ -41,5 +41,6 @@ void Camera::bind_uniforms(Shader& shader) {
 
 void Camera::setup_proj(Shader& shader) {
 	glm::mat4 projection = glm::ortho(-1.0f * this->zoom, 1.0f * this->zoom, -1.0f * this->zoom, 1.0f * this->zoom, 0.1f, 100.0f);
+	projection = glm::scale(projection, glm::vec3(1.0f, aspect_ratio, 1.0f));
 	shader.set("u_projection", projection);
 }

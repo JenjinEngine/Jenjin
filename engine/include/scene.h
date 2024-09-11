@@ -24,6 +24,9 @@ public:
 	Scene(std::vector<std::shared_ptr<GameObject>> game_objects);
 	~Scene();
 
+	// Used to correct aspect ratio on resize
+	void resize(GLFWwindow* window, int width, int height);
+
 	// Used to rebuild the scene buffers
 	void build();
 

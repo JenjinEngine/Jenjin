@@ -35,6 +35,10 @@ public:
 	void processInput(GLFWwindow* window);
 	void bind_uniforms(Shader& shader);
 	void setup_proj(Shader& shader);
+
+	// Aspect ratio correction
+	void set_aspect_ratio(float aspect_ratio) { this->aspect_ratio = aspect_ratio; }
+	float aspect_ratio = 1.0f;
 };
 }
 

@@ -9,7 +9,9 @@ using namespace Jenjin;
 
 const char* VERSION = "0.0.1";
 
-Engine::Engine() {
+Engine_t Jenjin::Engine;
+
+Engine_t::Engine_t() {
 // Enable debug logging if in debug mode
 #ifndef NDEBUG
 	spdlog::set_level(spdlog::level::trace);
@@ -80,14 +82,14 @@ Engine::Engine() {
 	});
 }
 
-void Engine::add_scene(Scene* scene, bool active) {
+void Engine_t::add_scene(Scene* scene, bool active) {
 	m_scenes.push_back(scene);
 
 	if (active)
 		m_active_scene = scene;
 }
 
-void Engine::activate_scene(unsigned int index) {
+void Engine_t::activate_scene(unsigned int index) {
 	if (index < 0 || index >= m_scenes.size()) {
 		spdlog::error("Invalid scene index: {}", index);
 		return;
@@ -96,7 +98,7 @@ void Engine::activate_scene(unsigned int index) {
 	m_active_scene = m_scenes[index];
 }
 
-void Engine::launch(int width, int height, const char* title) {
+void Engine_t::launch(int width, int height, const char* title) {
 	// Build all the scenes
 	for (auto& scene : m_scenes)
 	scene->build();
@@ -108,6 +110,10 @@ void Engine::launch(int width, int height, const char* title) {
 
 	// Tell OpenGL to draw to the entire window
 	glViewport(0, 0, width, height);
+
+	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+		Engine.m_active_scene->resize(window, width, height);
+	});
 
 	// Main loop
 	glClearColor(0.07f, 0.13f, 0.17f, 1.0);
