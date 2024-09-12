@@ -134,6 +134,8 @@ void Scene::render() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 
 	for (auto& gobj : m_game_objects) {
+		if (gobj->mesh_id == -1) continue;
+
 		auto& meshref = m_mesh_references[gobj->mesh_id];
 
 		glm::mat4 model = glm::mat4(1.0f);
