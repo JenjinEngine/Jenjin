@@ -7,6 +7,8 @@ int main(void) {
 	auto object1 = std::make_shared<Jenjin::GameObject>("Test1");
 	auto object2 = std::make_shared<Jenjin::GameObject>("Test2");
 
+	object1->set_texture("test/assets/container.jpg");
+
 	object1->set_position(glm::vec2(-1, -1));
 	object1->set_rotation(45.0);
 

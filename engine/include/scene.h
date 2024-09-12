@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "mesh.h"
+#include "texture.h"
 
 #include <functional>
 #include <vector>
@@ -43,15 +44,22 @@ public:
 
 	std::shared_ptr<GameObject> get_gameobject(std::string name);
 
+	// Texture management
+	void load_gameobject_texture(GameObject* game_object);
+
 	// Callback management
-	void set_update_callback(std::function<void(Scene&)> callback);
-	void set_render_callback(std::function<void(Scene&)> callback);
-	void set_resize_callback(std::function<void(Scene&, GLFWwindow*, int, int)> callback);
+	void set_update_callback(std::function<void(Scene*)> callback);
+	void set_render_callback(std::function<void(Scene*)> callback);
+	void set_resize_callback(std::function<void(Scene*, GLFWwindow*, int, int)> callback);
 
 private:
 	// Game object pointers
 	std::vector<std::shared_ptr<GameObject>> m_game_objects;
 	std::vector<MeshReference> m_mesh_references;
+
+	// Texture storage (follows same pattern as mesh references in
+	// terms of GameObject access)
+	std::vector<std::shared_ptr<Texture>> m_textures;
 
 	// OpenGL buffers
 	unsigned int m_vao, m_vbo, m_ebo = 0;

@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "engine.h"
 #include "ext/matrix_transform.hpp"
 #include "fwd.hpp"
 #include "gameobject.h"
@@ -42,6 +43,22 @@ void Scene::resize(GLFWwindow* window, int width, int height) {
 }
 
 void Scene::build() {
+	// Load all textures for the game objects
+	// (only if the engine isn't running)
+	//
+	// Loading textures mid-game is slow and
+	// can cause stuttering.
+	if (!Engine.running) {
+		for (auto& go : this->m_game_objects) {
+			if (!go->texture_path.empty()) {
+				auto texture = std::make_shared<Texture>(go->texture_path.c_str(), go->alpha);
+				this->m_textures.push_back(texture);
+				go->texture_id = (int)this->m_textures.size() - 1;
+				spdlog::debug("Loaded texture for GameObject: {}", go->name);
+			}
+		}
+	}
+
 	// Clear the mesh references
 	this->m_mesh_references.clear();
 
@@ -130,6 +147,20 @@ void Scene::render() {
 		glm::vec3 color = gobj->color;
 		m_default_shader.set("u_color", color);
 
+		if (gobj->texture_id == -1) {
+			m_default_shader.set("u_texture", -1);
+			m_default_shader.set("u_use_texture", false);
+		} else {
+			m_default_shader.set("u_use_texture", true);
+
+			// tryin to bind the texture
+			auto texture = m_textures[gobj->texture_id];
+			if (texture) {
+				texture->bind(0);
+				m_default_shader.set("u_texture", 0);
+			}
+		}
+
 		glDrawElementsBaseVertex(GL_TRIANGLES, meshref.index_count, GL_UNSIGNED_INT, 0, meshref.base_vertex);
 	}
 }
@@ -147,6 +178,20 @@ void Scene::debug_menu(bool separate_window) {
 
 	ImGui::Text("Game objects: %d", (int)this->m_game_objects.size());
 	ImGui::Text("Mesh references: %d", (int)this->m_mesh_references.size());
+
+	// Data uploaded to the GPU:
+	// - Vertices (position, tex_coords : 4, 4 bytes)
+	// - Indices (unsigned int : 4 bytes)
+	// - Total size = (vertices + indices) * sizeof(float)
+	size_t vram_bytes = (this->m_mesh_references.size() * sizeof(Vertex) + this->m_mesh_references.size() * sizeof(unsigned int));
+
+	if (vram_bytes > 1024 * 1024) {
+		ImGui::Text("VRAM: %.2f MB", vram_bytes / (1024.0f * 1024.0f));
+	} else if (vram_bytes > 1024) {
+		ImGui::Text("VRAM: %.2f KB", vram_bytes / 1024.0f);
+	} else {
+		ImGui::Text("VRAM: %d bytes", (int)vram_bytes);
+	}
 
 	if (ImGui::TreeNode("Utilities")) {
 		if (ImGui::TreeNode("Create")) {
@@ -194,6 +239,16 @@ void Scene::debug_menu(bool separate_window) {
 					ImGui::TreePop();
 				}
 
+				if (ImGui::TreeNode("Texture")) {
+					static char texture_path[128] = { 0 };
+					ImGui::InputText("Texture path", texture_path, sizeof(texture_path));
+					ImGui::SameLine();
+					if (ImGui::Button("Set texture")) {
+						go->set_texture(texture_path);
+					}
+					ImGui::TreePop();
+				}
+
 				ImGui::Unindent();
 			}
 			ImGui::PopID();
@@ -227,4 +282,25 @@ std::shared_ptr<GameObject> Scene::get_gameobject(std::string name) {
 	}
 
 	return nullptr;
+}
+
+// This function is used to dynamically load textures for game objects
+// that have details set after the scene has been built.
+void Scene::load_gameobject_texture(GameObject* game_object) {
+	auto texture = std::make_shared<Texture>(game_object->texture_path.c_str(), game_object->alpha);
+	this->m_textures.push_back(texture);
+	game_object->texture_id = (int)this->m_textures.size() - 1;
+	spdlog::debug("Loaded texture for GameObject: {}", game_object->name);
+}
+
+void Scene::set_update_callback(std::function<void(Scene*)> callback) {
+	this->m_update_callback = callback;
+}
+
+void Scene::set_render_callback(std::function<void(Scene*)> callback) {
+	this->m_render_callback = callback;
+}
+
+void Scene::set_resize_callback(std::function<void(Scene*, GLFWwindow*, int, int)> callback) {
+	this->m_resize_callback = callback;
 }

@@ -1,0 +1,3 @@
+`container.jpg` - https://learnopengl.com/img/textures/container.jpg
+`awesomeface.png` - https://learnopengl.com/img/textures/awesomeface.png
+`wall.jpg` - https://learnopengl.com/img/textures/wall.jpg

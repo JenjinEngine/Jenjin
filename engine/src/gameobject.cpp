@@ -1,4 +1,5 @@
 #include "gameobject.h"
+#include "engine.h"
 
 using namespace Jenjin;
 
@@ -34,6 +35,15 @@ void GameObject::set_scale(glm::vec2 scale) { transform.scale = scale; }
 void GameObject::set_color(glm::vec3 color) { this->color = color; }
 void GameObject::set_mesh_id(int mesh_id) { this->mesh_id = mesh_id; }
 void GameObject::set_name(std::string name) { this->name = name; }
+
+void GameObject::set_texture(std::string path, bool alpha) {
+	this->texture_path = path;
+	this->alpha = alpha;
+
+	if (Engine.running) {
+		Engine.active_scene->load_gameobject_texture(this);
+	}
+}
 
 // Modifiers
 void GameObject::translate(glm::vec2 translation) { transform.position += translation; }

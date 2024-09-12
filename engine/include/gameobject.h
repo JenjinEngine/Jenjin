@@ -30,6 +30,7 @@ public:
 	void set_mesh_id(int mesh_id);
 	void set_id(int id);
 	void set_name(std::string name);
+	void set_texture(std::string path, bool alpha = false);
 
 	// Modifiers
 	void translate(glm::vec2 translation);
@@ -45,11 +46,18 @@ public:
 	glm::vec3 color = glm::vec3(0.8f, 0.8f, 1.0f);
 	Transform transform;
 	std::string name;
+
 	Mesh mesh;
+	std::string texture_path = "";
+	bool alpha = false;
 
 	// `mesh_id` becomes an index into the mesh references
 	// vector stored in the scene
 	int mesh_id = -1;
+
+	// `texture_id` becomes an index into the texture vector
+	// stored in the scene
+	int texture_id = -1;
 };
 }
 

@@ -21,11 +21,16 @@ public:
 	// Launch the engine
 	void launch(int width, int height, const char* title);
 
+	// The active scene pointer
+	Scene* active_scene;
+
+	// Engine state
+	bool running = false;
+
 private:
 	GLFWwindow* window;
 
 	std::vector<Scene*> m_scenes;
-	Scene* m_active_scene;
 } extern Engine;
 }
 

@@ -80,7 +80,7 @@ Engine_t::Engine_t() {
 
 		// key to toggle wireframe
 		static bool wireframe = false;
-		if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+		if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
 			wireframe = !wireframe;
 			glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
 		}
@@ -104,7 +104,7 @@ void Engine_t::add_scene(Scene* scene, bool active) {
 	m_scenes.push_back(scene);
 
 	if (active)
-		m_active_scene = scene;
+		active_scene = scene;
 }
 
 void Engine_t::activate_scene(unsigned int index) {
@@ -113,7 +113,7 @@ void Engine_t::activate_scene(unsigned int index) {
 		return;
 	}
 
-	m_active_scene = m_scenes[index];
+	active_scene = m_scenes[index];
 }
 
 void Engine_t::launch(int width, int height, const char* title) {
@@ -130,8 +130,10 @@ void Engine_t::launch(int width, int height, const char* title) {
 	glViewport(0, 0, width, height);
 
 	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-		Engine.m_active_scene->resize(window, width, height);
+		Engine.active_scene->resize(window, width, height);
 	});
+
+	this->running = true;
 
 	// Main loop
 	glClearColor(0.07f, 0.13f, 0.17f, 1.0);
@@ -139,8 +141,8 @@ void Engine_t::launch(int width, int height, const char* title) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Render the active scene
-		if (m_active_scene) {
-			m_active_scene->render();
+		if (active_scene) {
+			active_scene->render();
 		} else {
 			spdlog::warn("No active scene");
 		}
@@ -156,7 +158,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 		ImGui::Text("Frame time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
 		ImGui::End();
 
-		this->m_active_scene->debug_menu();
+		this->active_scene->debug_menu();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
