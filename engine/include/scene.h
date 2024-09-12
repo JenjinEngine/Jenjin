@@ -59,7 +59,7 @@ private:
 
 	// Texture storage (follows same pattern as mesh references in
 	// terms of GameObject access)
-	std::vector<std::shared_ptr<Texture>> m_textures;
+	std::unordered_map<std::string, std::shared_ptr<Texture>> m_textures;
 
 	// OpenGL buffers
 	unsigned int m_vao, m_vbo, m_ebo = 0;

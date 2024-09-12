@@ -52,7 +52,7 @@ void Scene::build() {
 		for (auto& go : this->m_game_objects) {
 			if (!go->texture_path.empty()) {
 				auto texture = std::make_shared<Texture>(go->texture_path.c_str(), go->alpha);
-				this->m_textures.push_back(texture);
+				this->m_textures[go->texture_path] = texture;
 				go->texture_id = (int)this->m_textures.size() - 1;
 				spdlog::debug("Loaded texture for GameObject: {}", go->name);
 			}
@@ -120,9 +120,9 @@ void Scene::render() {
 
 	this->m_default_shader.use();
 
-#ifndef NDEBUG
+/* #ifndef NDEBUG */
 	m_default_camera.processInput(glfwGetCurrentContext());
-#endif
+/* #endif */
 
 	if (this->m_render_callback)
 		this->m_render_callback(this);
@@ -153,8 +153,7 @@ void Scene::render() {
 		} else {
 			m_default_shader.set("u_use_texture", true);
 
-			// tryin to bind the texture
-			auto texture = m_textures[gobj->texture_id];
+			auto texture = m_textures[gobj->texture_path];
 			if (texture) {
 				texture->bind(0);
 				m_default_shader.set("u_texture", 0);
@@ -192,6 +191,13 @@ void Scene::debug_menu(bool separate_window) {
 	} else {
 		ImGui::Text("VRAM: %d bytes", (int)vram_bytes);
 	}
+	ImGui::SameLine();
+	ImGui::TextDisabled("(?)");
+	if (ImGui::IsItemHovered()) {
+		ImGui::BeginTooltip();
+		ImGui::Text("Total VRAM used by scene buffers, does not include textures");
+		ImGui::EndTooltip();
+	}
 
 	if (ImGui::TreeNode("Utilities")) {
 		if (ImGui::TreeNode("Create")) {
@@ -201,6 +207,21 @@ void Scene::debug_menu(bool separate_window) {
 			if (ImGui::Button("Create GameObject")) {
 				auto go = std::make_shared<GameObject>(game_object_name);
 				this->add_gameobject(go);
+			}
+
+			static int many_count = 100;
+      ImGui::InputInt("Count", &many_count);
+			ImGui::SameLine();
+			if (ImGui::SmallButton("Create")) {
+				for (int i = 0; i < many_count; i++) {
+					auto go = std::make_shared<GameObject>(game_object_name);
+					int x = rand() % 800 - 400;
+					int y = rand() % 800 - 400;
+
+					go->set_position(glm::vec2(x, y));
+
+					this->add_gameobject(go);
+				}
 			}
 
 			ImGui::TreePop();
@@ -241,11 +262,15 @@ void Scene::debug_menu(bool separate_window) {
 
 				if (ImGui::TreeNode("Texture")) {
 					static char texture_path[128] = { 0 };
+					static bool alpha_channel_enabled = false;
+
 					ImGui::InputText("Texture path", texture_path, sizeof(texture_path));
-					ImGui::SameLine();
+					ImGui::Checkbox("Alpha channel", &alpha_channel_enabled);
+
 					if (ImGui::Button("Set texture")) {
-						go->set_texture(texture_path);
+						go->set_texture(texture_path, alpha_channel_enabled);
 					}
+
 					ImGui::TreePop();
 				}
 
@@ -287,8 +312,13 @@ std::shared_ptr<GameObject> Scene::get_gameobject(std::string name) {
 // This function is used to dynamically load textures for game objects
 // that have details set after the scene has been built.
 void Scene::load_gameobject_texture(GameObject* game_object) {
+	if (this->m_textures.find(game_object->texture_path) != this->m_textures.end()) {
+		spdlog::debug("Texture already loaded for GameObject: {}", game_object->name);
+		return;
+	}
+
 	auto texture = std::make_shared<Texture>(game_object->texture_path.c_str(), game_object->alpha);
-	this->m_textures.push_back(texture);
+	this->m_textures[game_object->texture_path] = texture;
 	game_object->texture_id = (int)this->m_textures.size() - 1;
 	spdlog::debug("Loaded texture for GameObject: {}", game_object->name);
 }

@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
+#include <string>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -35,9 +36,12 @@ Texture::Texture(const char* imagePath, bool alpha) {
 	}
 
 	stbi_image_free(data);
+
+	this->m_image_path = imagePath;
 }
 
 Texture::~Texture() {
+	spdlog::debug("Deleting texture: {}", m_image_path);
 	glDeleteTextures(1, &ID);
 }
 

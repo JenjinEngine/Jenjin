@@ -8,11 +8,12 @@
 #include <imgui_impl_opengl3.h>
 
 #include "engine.h"
-#include "imgui_internal.h"
 
 using namespace Jenjin;
 
-const char* VERSION = "0.0.1";
+/* const char VERSION[] = "0.0.1"; */
+#define VERSION "0.0.1"
+const char* HEADER = "Jenjin " VERSION;
 
 Engine_t Jenjin::Engine;
 
@@ -152,8 +153,8 @@ void Engine_t::launch(int width, int height, const char* title) {
 		ImGui::NewFrame();
 
 			// Render ImGui windows
-		ImGui::Begin("Jenjin");
-		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+		ImGui::Begin(HEADER);
+		ImGui::Text("FPS: %.0f", ImGui::GetIO().Framerate);
 		ImGui::Text("Scene count: %d", (int)m_scenes.size());
 		ImGui::Text("Frame time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
 		ImGui::End();
