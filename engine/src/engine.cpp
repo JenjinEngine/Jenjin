@@ -167,6 +167,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 	// Tell OpenGL to draw to the entire window
 	glViewport(0, 0, width, height);
 
+	this->active_scene->resize(window, width, height);
 	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
 		Engine.active_scene->resize(window, width, height);
 	});
@@ -214,9 +215,4 @@ void Engine_t::launch(int width, int height, const char* title) {
 
 	spdlog::debug("Terminating GLFW");
 	glfwTerminate();
-
-	/* spdlog::debug("Deinitializing Jenjin {}", VERSION); */
-
-	/* spdlog::debug("Terminating GLFW"); */
-	/* glfwTerminate(); */
 }
