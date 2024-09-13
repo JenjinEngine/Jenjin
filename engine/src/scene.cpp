@@ -233,6 +233,12 @@ void Scene::debug_menu(bool separate_window) {
 			this->build();
 		}
 
+		if (ImGui::Button("All GameObjects to origin")) {
+			for (auto& go : this->m_game_objects) {
+				go->transform.position = glm::vec2(0.0f);
+			}
+		}
+
 		ImGui::TreePop();
 	}
 
