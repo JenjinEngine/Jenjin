@@ -4,3 +4,6 @@ build
 
 # Jenjin packed build
 jenpak-out
+
+# ImGui
+imgui.ini
