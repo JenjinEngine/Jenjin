@@ -8,6 +8,7 @@
 #include "texture.h"
 
 #include <functional>
+#include <ostream>
 #include <vector>
 #include <memory>
 
@@ -51,6 +52,10 @@ public:
 	void set_update_callback(std::function<void(Scene*)> callback);
 	void set_render_callback(std::function<void(Scene*)> callback);
 	void set_resize_callback(std::function<void(Scene*, GLFWwindow*, int, int)> callback);
+
+	// Saving/loading (take in ostream/istream)
+	void save(std::ostream &os);
+	void load(std::istream &is);
 
 private:
 	// Game object pointers

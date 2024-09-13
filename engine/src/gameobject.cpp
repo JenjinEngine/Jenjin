@@ -1,5 +1,8 @@
 #include "gameobject.h"
 #include "engine.h"
+#include "scene.h"
+
+#include <spdlog/spdlog.h>
 
 using namespace Jenjin;
 
@@ -25,6 +28,10 @@ Mesh create_quad(float width, float height) {
 GameObject::GameObject(std::string name) {
 	this->name = name;
 	this->mesh = create_quad(1.0f, 1.0f);
+
+	for (auto& vx : mesh.vertices) {
+		spdlog::debug("Vertex: ({}, {}), ({}, {})", vx.position.x, vx.position.y, vx.tex_coords.x, vx.tex_coords.y);
+	}
 }
 
 // Setters
@@ -36,13 +43,22 @@ void GameObject::set_color(glm::vec3 color) { this->color = color; }
 void GameObject::set_mesh_id(int mesh_id) { this->mesh_id = mesh_id; }
 void GameObject::set_name(std::string name) { this->name = name; }
 
-void GameObject::set_texture(std::string path, bool alpha) {
+void GameObject::set_texture(std::string path, bool alpha, void* scene) {
 	this->texture_path = path;
 	this->alpha = alpha;
 
 	if (Engine.running) {
-		Engine.active_scene->load_gameobject_texture(this);
+		spdlog::debug("Loading texture for game object dynamically: {}", name);
+		Scene* sel_scene = scene == nullptr ? Engine.active_scene : reinterpret_cast<Scene*>(scene);
+		if (scene != nullptr) spdlog::debug("Using custom scene");
+		sel_scene->load_gameobject_texture(this);
 	}
+}
+
+void GameObject::remove_texture() {
+	texture_path = "";
+	alpha = false;
+	texture_id = -1;
 }
 
 // Modifiers

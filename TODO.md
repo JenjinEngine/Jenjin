@@ -1,6 +1,7 @@
 # TODO
 - [x] Basic scene and mesh rendering
 - [x] Texture support for models
+- [x] Scene saving/loading
 - [ ] Add Lua and Sol2 bindings
 - [ ] Add type definitions for Teal (Lua type checker)
 - [ ] Add automatic reloading of Lua scripts

@@ -1,3 +1,4 @@
+#include <any>
 #include <spdlog/spdlog.h>
 
 #include <glad/glad.h>
@@ -7,7 +8,11 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <fstream>
+#include <ostream>
+
 #include "engine.h"
+#include "scene.h"
 
 using namespace Jenjin;
 
@@ -85,8 +90,26 @@ Engine_t::Engine_t() {
 			wireframe = !wireframe;
 			glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
 		}
+
+		if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
+			std::ofstream os("test.jenscene");
+			Engine.active_scene->save(os);
+		}
+
+		if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+			std::ifstream is("test.jenscene");
+			spdlog::debug("Loading scene from file");
+
+			/* auto scene = new Jenjin::Scene({test1, test2}); */
+			auto scene = new Jenjin::Scene();
+			scene->load(is);
+
+			Engine.add_scene(scene, true);
+			spdlog::debug("Scene loaded from file");
+		}
 	});
 
+#ifndef NDEBUG
 	IMGUI_CHECKVERSION();
 	spdlog::debug("ImGui Version: {}", IMGUI_VERSION);
 
@@ -99,13 +122,20 @@ Engine_t::Engine_t() {
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#endif
 }
 
 void Engine_t::add_scene(Scene* scene, bool active) {
 	m_scenes.push_back(scene);
 
-	if (active)
+	if (active) {
 		active_scene = scene;
+
+		// Resize the scene
+		int width, height;
+		glfwGetWindowSize(window, &width, &height);
+		active_scene->resize(window, width, height);
+	}
 }
 
 void Engine_t::activate_scene(unsigned int index) {
@@ -115,6 +145,11 @@ void Engine_t::activate_scene(unsigned int index) {
 	}
 
 	active_scene = m_scenes[index];
+
+	// Resize the scene
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	active_scene->resize(window, width, height);
 }
 
 void Engine_t::launch(int width, int height, const char* title) {
@@ -148,11 +183,12 @@ void Engine_t::launch(int width, int height, const char* title) {
 			spdlog::warn("No active scene");
 		}
 
+#ifndef NDEBUG
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-			// Render ImGui windows
+		// Render ImGui windows
 		ImGui::Begin(HEADER);
 		ImGui::Text("FPS: %.0f", ImGui::GetIO().Framerate);
 		ImGui::Text("Scene count: %d", (int)m_scenes.size());
@@ -163,6 +199,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

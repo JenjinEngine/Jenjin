@@ -74,12 +74,15 @@ void Scene::build() {
 
 		MeshReference meshref = { base_vertex, base_index, (int)vertices.size(), (int)indices.size() };
 		this->m_mesh_references.push_back(meshref);
+		spdlog::debug("Stored mesh reference");
 
 		scene_vertices.insert(scene_vertices.end(), vertices.begin(), vertices.end());
 		scene_indices.insert(scene_indices.end(), indices.begin(), indices.end());
+		spdlog::debug("Inserted vertices and indices into scene buffers ready for building");
 
 		// Assign the mesh ID to the game object
 		go->mesh_id = (int)this->m_mesh_references.size() - 1;
+		spdlog::debug("Assigned mesh ID: {}", go->mesh_id);
 	}
 
 	spdlog::debug("Scene triangles: {}", scene_indices.size() / 3);
@@ -272,11 +275,18 @@ void Scene::debug_menu(bool separate_window) {
 					static char texture_path[128] = { 0 };
 					static bool alpha_channel_enabled = false;
 
+					ImGui::Checkbox("Alpha", &alpha_channel_enabled);
+					ImGui::SameLine();
 					ImGui::InputText("Texture path", texture_path, sizeof(texture_path));
-					ImGui::Checkbox("Alpha channel", &alpha_channel_enabled);
 
 					if (ImGui::Button("Set texture")) {
 						go->set_texture(texture_path, alpha_channel_enabled);
+					}
+
+					ImGui::SameLine();
+
+					if (ImGui::Button("Remove texture")) {
+						go->remove_texture();
 					}
 
 					ImGui::TreePop();
@@ -299,6 +309,7 @@ void Scene::debug_menu(bool separate_window) {
 
 void Scene::add_gameobject(std::shared_ptr<GameObject> game_object) {
 	this->m_game_objects.push_back(game_object);
+	spdlog::debug("Added GameObject: {} ({})", game_object->name, (int)this->m_game_objects.size());
 }
 
 void Scene::add_gameobjects(std::vector<std::shared_ptr<GameObject>> game_objects) {
@@ -322,6 +333,17 @@ std::shared_ptr<GameObject> Scene::get_gameobject(std::string name) {
 void Scene::load_gameobject_texture(GameObject* game_object) {
 	if (this->m_textures.find(game_object->texture_path) != this->m_textures.end()) {
 		spdlog::debug("Texture already loaded for GameObject: {}", game_object->name);
+
+		// Set a preloaded texture
+		int index = 0;
+		for (auto& [key, value] : this->m_textures) {
+			if (key == game_object->texture_path) {
+				game_object->texture_id = index;
+				break;
+			}
+			index++;
+		}
+
 		return;
 	}
 
@@ -341,4 +363,55 @@ void Scene::set_render_callback(std::function<void(Scene*)> callback) {
 
 void Scene::set_resize_callback(std::function<void(Scene*, GLFWwindow*, int, int)> callback) {
 	this->m_resize_callback = callback;
+}
+
+// Save in binary format the game objects
+// 128 + 2*4 + 4 + 2*4 + 3*4 + 128 + 1 = 289
+void Scene::save(std::ostream& os) {
+	for (auto& go : this->m_game_objects) {
+		os.write(go->name.c_str(), 128);
+		os.write((char*)&go->transform.position, 2 * sizeof(float));
+		os.write((char*)&go->transform.rotation, sizeof(float));
+		os.write((char*)&go->transform.scale, 2 * sizeof(float));
+		os.write((char*)&go->color, 3 * sizeof(float));
+		os.write(go->texture_path.c_str(), 128);
+		os.write((char*)&go->alpha, 1);
+	}
+}
+
+// Load in binary format the game objects
+void Scene::load(std::istream& is) {
+	spdlog::debug("Loading scene from file");
+
+	while (is.good()) {
+		char name[128];
+		glm::vec2 position;
+		float rotation;
+		glm::vec2 scale;
+		glm::vec3 color;
+		char texture_path[128];
+		bool alpha;
+		is.read(name, 128);
+		is.read((char*)&position, 2 * sizeof(float));
+		is.read((char*)&rotation, sizeof(float));
+		is.read((char*)&scale, 2 * sizeof(float));
+		is.read((char*)&color, 3 * sizeof(float));
+		is.read(texture_path, 128);
+		is.read((char*)&alpha, 1);
+		auto go = std::make_shared<GameObject>(name);
+		go->transform.position = position;
+		go->transform.rotation = rotation;
+		go->transform.scale = scale;
+		go->color = color;
+		go->texture_path = texture_path;
+		spdlog::debug("texture_path: {}", texture_path);
+		go->set_texture(texture_path, alpha, this);
+		this->add_gameobject(go);
+	}
+
+	// HACK: Delete the last game object... it's a duplicate (Note: This needs a better solution)
+	if (m_game_objects.size() > 0)
+		this->m_game_objects.pop_back();
+
+	this->build();
 }

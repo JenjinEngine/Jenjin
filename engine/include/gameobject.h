@@ -30,7 +30,9 @@ public:
 	void set_mesh_id(int mesh_id);
 	void set_id(int id);
 	void set_name(std::string name);
-	void set_texture(std::string path, bool alpha = false);
+
+	void set_texture(std::string path, bool alpha = false, void* scene = nullptr);
+	void remove_texture();
 
 	// Modifiers
 	void translate(glm::vec2 translation);

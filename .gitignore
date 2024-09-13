@@ -2,8 +2,9 @@
 .cache
 build
 
-# Jenjin packed build
+# Jenjin files
 jenpak-out
+*.jenscene
 
 # ImGui
 imgui.ini
