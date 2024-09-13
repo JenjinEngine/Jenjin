@@ -1,2 +1,6 @@
+# Compilation files
 .cache
 build
+
+# Jenjin packed build
+jenpak-out
