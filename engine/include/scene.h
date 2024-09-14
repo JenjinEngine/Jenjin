@@ -57,9 +57,11 @@ public:
 	void save(std::ostream &os);
 	void load(std::istream &is);
 
-private:
 	// Game object pointers
 	std::vector<std::shared_ptr<GameObject>> m_game_objects;
+
+private:
+	// Game object pointers
 	std::vector<MeshReference> m_mesh_references;
 
 	// Texture storage (follows same pattern as mesh references in

@@ -127,9 +127,6 @@ void Scene::render() {
 	m_default_camera.processInput(glfwGetCurrentContext());
 /* #endif */
 
-	if (this->m_render_callback)
-		this->m_render_callback(this);
-
 	m_default_camera.setup_proj(m_default_shader);
 	m_default_camera.bind_uniforms(m_default_shader);
 
@@ -368,6 +365,11 @@ void Scene::set_resize_callback(std::function<void(Scene*, GLFWwindow*, int, int
 // Save in binary format the game objects
 // 128 + 2*4 + 4 + 2*4 + 3*4 + 128 + 1 = 289
 void Scene::save(std::ostream& os) {
+	if (this->m_game_objects.size() == 0) {
+		spdlog::debug("No game objects to save");
+		return;
+	}
+
 	for (auto& go : this->m_game_objects) {
 		os.write(go->name.c_str(), 128);
 		os.write((char*)&go->transform.position, 2 * sizeof(float));
@@ -382,6 +384,18 @@ void Scene::save(std::ostream& os) {
 // Load in binary format the game objects
 void Scene::load(std::istream& is) {
 	spdlog::debug("Loading scene from file");
+
+	// get the size of the file
+	int begin = is.tellg();
+	is.seekg(0, std::ios::end);
+	int end = is.tellg();
+
+	if (end - begin <= 1) {
+		spdlog::debug("File is empty");
+		return;
+	}
+
+	is.seekg(0, std::ios::beg);
 
 	while (is.good()) {
 		char name[128];
@@ -404,8 +418,10 @@ void Scene::load(std::istream& is) {
 		go->transform.scale = scale;
 		go->color = color;
 		go->texture_path = texture_path;
-		spdlog::debug("texture_path: {}", texture_path);
-		go->set_texture(texture_path, alpha, this);
+
+		if (!go->texture_path.empty())
+			go->set_texture(texture_path, alpha, this);
+
 		this->add_gameobject(go);
 	}
 

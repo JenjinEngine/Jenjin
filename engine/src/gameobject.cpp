@@ -28,10 +28,6 @@ Mesh create_quad(float width, float height) {
 GameObject::GameObject(std::string name) {
 	this->name = name;
 	this->mesh = create_quad(1.0f, 1.0f);
-
-	for (auto& vx : mesh.vertices) {
-		spdlog::debug("Vertex: ({}, {}), ({}, {})", vx.position.x, vx.position.y, vx.tex_coords.x, vx.tex_coords.y);
-	}
 }
 
 // Setters

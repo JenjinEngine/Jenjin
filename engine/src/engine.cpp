@@ -1,4 +1,3 @@
-#include <any>
 #include <spdlog/spdlog.h>
 
 #include <glad/glad.h>
@@ -9,7 +8,6 @@
 #include <imgui_impl_opengl3.h>
 
 #include <fstream>
-#include <ostream>
 
 #include "engine.h"
 #include "scene.h"
@@ -80,7 +78,7 @@ Engine_t::Engine_t() {
 
 	// Set escape key to close window
 	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT) {
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		}
 
@@ -109,7 +107,6 @@ Engine_t::Engine_t() {
 		}
 	});
 
-#ifndef NDEBUG
 	IMGUI_CHECKVERSION();
 	spdlog::debug("ImGui Version: {}", IMGUI_VERSION);
 
@@ -124,7 +121,6 @@ Engine_t::Engine_t() {
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("engine/resources/fonts/Roboto-Medium.ttf", 16.0f);
-#endif
 }
 
 void Engine_t::add_scene(Scene* scene, bool active) {
@@ -136,7 +132,9 @@ void Engine_t::add_scene(Scene* scene, bool active) {
 		// Resize the scene
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
-		active_scene->resize(window, width, height);
+		if (width != 1 && height != 1) {
+			active_scene->resize(window, width, height);
+		}
 	}
 }
 
@@ -179,17 +177,16 @@ void Engine_t::launch(int width, int height, const char* title) {
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 		// Render the active scene
 		if (active_scene) {
 			active_scene->render();
 		} else {
 			spdlog::warn("No active scene");
 		}
-
-#ifndef NDEBUG
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
 
 		// Render ImGui windows
 		ImGui::Begin(HEADER);
@@ -198,11 +195,10 @@ void Engine_t::launch(int width, int height, const char* title) {
 		ImGui::Text("Frame time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
 		ImGui::End();
 
-		this->active_scene->debug_menu();
+		/* this->active_scene->debug_menu(); */
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-#endif
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
