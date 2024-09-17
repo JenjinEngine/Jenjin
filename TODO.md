@@ -2,7 +2,7 @@
 - [x] Basic scene and mesh rendering
 - [x] Texture support for models
 - [x] Scene saving/loading
-- [ ] Editor renderring game to texture for embedding in ImGui
+- [x] Editor renderring game to texture for embedding in ImGui
 - [ ] Add Lua and Sol2 bindings
 - [ ] Add type definitions for Teal (Lua type checker)
 - [ ] Add automatic reloading of Lua scripts
@@ -12,6 +12,7 @@
 - [ ] Support having a global game state in Lua
 
 ## Optimisation
+- [ ] Revise usages of `push_back`  vs `emplace_back`
 - [ ] Resource manager (don't load the same resource twice)
 - [ ] Use a single set of vertices/indices loaded into the VBO for quads (VRAM optimisation)
 - [ ] Cache model matrices (CPU optimisation)

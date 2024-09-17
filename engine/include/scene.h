@@ -23,6 +23,7 @@ class Scene {
 public:
 	// RAII pattern
 	Scene();
+	Scene(std::string path);
 	Scene(std::vector<std::shared_ptr<GameObject>> game_objects);
 	~Scene();
 

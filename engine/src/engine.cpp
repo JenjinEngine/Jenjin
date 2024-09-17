@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <spdlog/spdlog.h>
 
 #include <glad/glad.h>
@@ -7,7 +8,9 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#ifndef JENJIN_HEADLESS
 #include <fstream>
+#endif
 
 #include "engine.h"
 #include "scene.h"
@@ -18,9 +21,15 @@ using namespace Jenjin;
 #define VERSION "0.0.1"
 const char* HEADER = "Jenjin " VERSION;
 
-Engine_t Jenjin::Engine;
+#ifndef JENJIN_HEADLESS
+Engine_t* Jenjin::Engine = new Engine_t();
+#else
+Engine_t* Jenjin::Engine = nullptr;
+#endif
 
 Engine_t::Engine_t() {
+	spdlog::trace("Engine_t::Engine_t()");
+
 // Enable debug logging if in debug mode
 #ifndef NDEBUG
 	spdlog::set_level(spdlog::level::trace);
@@ -28,6 +37,7 @@ Engine_t::Engine_t() {
 
 	spdlog::debug("Initializing Jenjin {}", VERSION);
 
+#ifndef JENJIN_HEADLESS
 	// Intialize GLFW, logging any errors
 	if (!glfwInit()) {
 		const char* error;
@@ -57,7 +67,7 @@ Engine_t::Engine_t() {
 		spdlog::error("Failed to create GLFW window: {} ({})", error, code);
 		glfwTerminate();
 
-		throw std::runtime_error("Failed to create GLFW window");
+		exit(EXIT_FAILURE);
 	}
 
 	// Make the window's context current
@@ -68,7 +78,7 @@ Engine_t::Engine_t() {
 		spdlog::error("Failed to initialize GLAD");
 		glfwTerminate();
 
-		throw std::runtime_error("Failed to initialize GLAD");
+		exit(EXIT_FAILURE);
 	}
 
 	spdlog::debug("OpenGL Version: {}", (const char*)glGetString(GL_VERSION));
@@ -91,7 +101,7 @@ Engine_t::Engine_t() {
 
 		if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
 			std::ofstream os("test.jenscene");
-			Engine.active_scene->save(os);
+			Engine->active_scene->save(os);
 		}
 
 		if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
@@ -102,7 +112,7 @@ Engine_t::Engine_t() {
 			auto scene = new Jenjin::Scene();
 			scene->load(is);
 
-			Engine.add_scene(scene, true);
+			Engine->add_scene(scene, true);
 			spdlog::debug("Scene loaded from file");
 		}
 	});
@@ -121,13 +131,23 @@ Engine_t::Engine_t() {
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("engine/resources/fonts/Roboto-Medium.ttf", 16.0f);
+#else
+	spdlog::debug("Jenjin is in headless mode");
+	void(glfwGetKeyScancode(0));
+	if (glfwGetError(nullptr) == GLFW_NOT_INITIALIZED) {
+		spdlog::error("Jenjin headless mode requires GLFW to be initialized externally");
+		exit(EXIT_FAILURE);
+	}
+#endif
 }
 
 void Engine_t::add_scene(Scene* scene, bool active) {
 	m_scenes.push_back(scene);
+	spdlog::trace("Pushed back scene on line {}", __LINE__ - 1);
 
 	if (active) {
 		active_scene = scene;
+		spdlog::trace("Set scene on line {}", __LINE__ - 1);
 
 		// Resize the scene
 		int width, height;
@@ -135,6 +155,7 @@ void Engine_t::add_scene(Scene* scene, bool active) {
 		if (width != 1 && height != 1) {
 			active_scene->resize(window, width, height);
 		}
+		spdlog::trace("Resized scene on line {}", __LINE__ - 1);
 	}
 }
 
@@ -167,7 +188,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 
 	this->active_scene->resize(window, width, height);
 	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-		Engine.active_scene->resize(window, width, height);
+		Engine->active_scene->resize(window, width, height);
 	});
 
 	this->running = true;
@@ -212,3 +233,32 @@ void Engine_t::launch(int width, int height, const char* title) {
 	spdlog::debug("Terminating GLFW");
 	glfwTerminate();
 }
+
+#ifdef JENJIN_HEADLESS
+// NOTE: this function expects ImGui and the render loop to be setup
+// externally.
+//
+// This function is used to render the engines view into an ImGui window
+void Engine_t::render_into_imgui(int width, int height) {
+	if (ow != width || oh != height) {
+		ow = width;
+		oh = height;
+		framebuffer.resize(width, height);
+		active_scene->resize(window, width, height);
+	}
+	// Bind the framebuffer
+	framebuffer.bind();
+	// Clear the framebuffer
+	glClearColor(0.07f, 0.13f, 0.17f, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	// Render the active scene
+	if (active_scene) {
+		active_scene->render();
+	} else {
+		spdlog::warn("No active scene");
+	}
+	// Unbind the framebuffer
+	framebuffer.unbind();
+	// Render the framebuffer texture into an ImGui window
+}
+#endif

@@ -1,6 +1,11 @@
 #ifndef JENJIN_ENGINE_H
 #define JENJIN_ENGINE_H
 
+#include "framebuffer.h"
+#ifdef JENJIN_HEADLESS
+#include "scene.h"
+#endif
+
 #include "scene.h"
 
 #include <GLFW/glfw3.h>
@@ -27,11 +32,24 @@ public:
 	// Engine state
 	bool running = false;
 
+	void set_window(GLFWwindow* window) {
+		this->window = window;
+	}
+
+#ifdef JENJIN_HEADLESS
+	Framebuffer framebuffer;
+	void render_into_imgui(int width, int height);
+#endif
+
 private:
 	GLFWwindow* window;
 
 	std::vector<Scene*> m_scenes;
-} extern Engine;
+
+#ifdef JENJIN_HEADLESS
+	int ow, oh;
+#endif
+} extern* Engine;
 }
 
 #endif // JENJIN_ENGINE_H

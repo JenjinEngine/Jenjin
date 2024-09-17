@@ -4,7 +4,9 @@
 
 using namespace Jenjin;
 
-Camera::Camera() : cameraSpeed(2.5f), cameraUp(0.0f, 1.0f, 0.0f), cameraRight(1.0f, 0.0f, 0.0f), cameraFront(0.0f, 0.0f, -1.0f) {}
+Camera::Camera() : cameraSpeed(2.5f), cameraUp(0.0f, 1.0f, 0.0f), cameraRight(1.0f, 0.0f, 0.0f), cameraFront(0.0f, 0.0f, -1.0f) {
+	spdlog::trace("Camera::Camera()");
+}
 
 void Camera::processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS)

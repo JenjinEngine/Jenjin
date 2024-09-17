@@ -12,6 +12,8 @@
 using namespace Jenjin;
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
+	spdlog::trace("Shader::Shader(\"{}\", \"{}\")", vertexPath, fragmentPath);
+
 	// Code buffers
 	std::string vertexCode;
 	std::string fragmentCode;
@@ -104,6 +106,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 }
 
 Shader::~Shader() {
+	spdlog::trace("Shader::~Shader()");
+
 	glDeleteProgram(ID);
 }
 

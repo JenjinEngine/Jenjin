@@ -8,6 +8,8 @@
 #include <stb_image.h>
 
 Texture::Texture(const char* imagePath, bool alpha) {
+	spdlog::trace("Texture::Texture(\"{}\", {})", imagePath, alpha);
+
 	stbi_set_flip_vertically_on_load(true);
 
 	// Load and generate the texture
@@ -41,6 +43,7 @@ Texture::Texture(const char* imagePath, bool alpha) {
 }
 
 Texture::~Texture() {
+	spdlog::trace("Texture::~Texture()");
 	spdlog::debug("Deleting texture: {}", m_image_path);
 	glDeleteTextures(1, &ID);
 }

@@ -6,29 +6,37 @@
 #include "gtc/type_ptr.hpp"
 #include "mesh.h"
 
+#include <fstream>
+
 #include <spdlog/spdlog.h>
 #include <imgui.h>
 
 using namespace Jenjin;
 
 Scene::Scene() {
-	spdlog::debug("Scene created");
+	spdlog::trace("Scene::Scene()");
+}
+
+Scene::Scene(std::string path) {
+	spdlog::trace("Scene::Scene(\"{}\")", path);
+	std::ifstream is(path, std::ios::binary);
+	this->load(is);
 }
 
 Scene::Scene(std::vector<std::shared_ptr<GameObject>> game_objects) {
+	spdlog::trace("Scene::Scene(vec<{}>)", game_objects.size());
+
 	for (auto& go : game_objects) {
 		this->add_gameobject(go);
 	}
 }
 
 Scene::~Scene() {
-	spdlog::debug("Destroying scene");
+	spdlog::trace("Scene::~Scene()");
 
 	glDeleteVertexArrays(1, &this->m_vao);
 	glDeleteBuffers(1, &this->m_vbo);
 	glDeleteBuffers(1, &this->m_ebo);
-
-	spdlog::debug("Scene destroyed");
 }
 
 void Scene::resize(GLFWwindow* window, int width, int height) {
@@ -48,7 +56,7 @@ void Scene::build() {
 	//
 	// Loading textures mid-game is slow and
 	// can cause stuttering.
-	if (!Engine.running) {
+	if (!Engine->running) {
 		for (auto& go : this->m_game_objects) {
 			if (!go->texture_path.empty()) {
 				auto texture = std::make_shared<Texture>(go->texture_path.c_str(), go->alpha);
@@ -395,9 +403,12 @@ void Scene::load(std::istream& is) {
 		return;
 	}
 
+	int gobj_count = (end - begin) / 289;
+	int gobjs = 0;
+
 	is.seekg(0, std::ios::beg);
 
-	while (is.good()) {
+	for (int i = 0; i < gobj_count; i++) {
 		char name[128];
 		glm::vec2 position;
 		float rotation;
@@ -424,10 +435,6 @@ void Scene::load(std::istream& is) {
 
 		this->add_gameobject(go);
 	}
-
-	// HACK: Delete the last game object... it's a duplicate (Note: This needs a better solution)
-	if (m_game_objects.size() > 0)
-		this->m_game_objects.pop_back();
 
 	this->build();
 }

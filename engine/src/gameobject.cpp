@@ -26,6 +26,8 @@ Mesh create_quad(float width, float height) {
 }
 
 GameObject::GameObject(std::string name) {
+	spdlog::trace("GameObject::GameObject(\"{}\")", name);
+
 	this->name = name;
 	this->mesh = create_quad(1.0f, 1.0f);
 }
@@ -43,9 +45,9 @@ void GameObject::set_texture(std::string path, bool alpha, void* scene) {
 	this->texture_path = path;
 	this->alpha = alpha;
 
-	if (Engine.running) {
+	if (Engine->running) {
 		spdlog::debug("Loading texture for game object dynamically: {}", name);
-		Scene* sel_scene = scene == nullptr ? Engine.active_scene : reinterpret_cast<Scene*>(scene);
+		Scene* sel_scene = scene == nullptr ? Engine->active_scene : reinterpret_cast<Scene*>(scene);
 		if (scene != nullptr) spdlog::debug("Using custom scene");
 		sel_scene->load_gameobject_texture(this);
 	}

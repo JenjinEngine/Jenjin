@@ -10,7 +10,9 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 # Project declaration
 project(Jenjin)
 
-add_subdirectory(vendor)
+add_definitions(-DJENJIN_HEADLESS)
 add_subdirectory(engine)
+
+add_subdirectory(vendor)
 add_subdirectory(editor)
 add_subdirectory(test)
