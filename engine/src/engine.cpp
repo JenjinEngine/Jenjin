@@ -17,9 +17,7 @@
 
 using namespace Jenjin;
 
-/* const char VERSION[] = "0.0.1"; */
-#define VERSION "0.0.1"
-const char* HEADER = "Jenjin " VERSION;
+const char* HEADER = "Jenjin " JENJIN_VERSION;
 
 #ifndef JENJIN_HEADLESS
 Engine_t* Jenjin::Engine = new Engine_t();
@@ -35,7 +33,7 @@ Engine_t::Engine_t() {
 	spdlog::set_level(spdlog::level::trace);
 #endif
 
-	spdlog::debug("Initializing Jenjin {}", VERSION);
+	spdlog::debug("Initializing Jenjin {}", JENJIN_VERSION);
 
 #ifndef JENJIN_HEADLESS
 	// Intialize GLFW, logging any errors
@@ -227,7 +225,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 		glfwPollEvents();
 	}
 
-	spdlog::debug("Deinitializing Jenjin {}", VERSION);
+	spdlog::debug("Deinitializing Jenjin {}", JENJIN_VERSION);
 
 	for (auto& scene : m_scenes)
 	delete scene;

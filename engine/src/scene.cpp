@@ -464,8 +464,3 @@ void Scene::load(std::istream& is) {
 
 	this->build();
 }
-
-void Scene::update_lua_ptrs() {
-	this->m_lua_manager.update_ptrs();
-	this->m_lua_manager.ready();
-}

@@ -6,7 +6,8 @@
 #include <sol/sol.hpp>
 
 #include <string>
-#include <vector>
+
+typedef sol::protected_function pf;
 
 namespace Jenjin {
 class LuaManager {
@@ -16,6 +17,8 @@ public:
 	void script(std::string code);
 	void script_file(std::string file);
 
+	void reload_files();
+
 	void ready();
 	void update();
 
@@ -24,8 +27,7 @@ public:
 private:
 	sol::state state;
 
-	std::vector<sol::protected_function> m_update_functions = {};
-	std::vector<sol::protected_function> m_ready_functions = {};
+	std::unordered_map<std::string, std::pair<pf, pf>> m_functions = {};
 
 	void bindings();
 };

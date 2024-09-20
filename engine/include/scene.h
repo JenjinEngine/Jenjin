@@ -64,7 +64,14 @@ public:
 	std::vector<std::shared_ptr<GameObject>> m_game_objects;
 
 	// Lua management
-	void update_lua_ptrs();
+	void update_lua_ptrs() {
+		m_lua_manager.update_ptrs();
+		m_lua_manager.ready();
+	}
+	void reload_lua() {
+		m_lua_manager.reload_files();
+		this->update_lua_ptrs();
+	}
 
 private:
 	// Game object pointers

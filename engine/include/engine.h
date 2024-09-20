@@ -10,6 +10,8 @@
 
 #include <GLFW/glfw3.h>
 
+#define JENJIN_VERSION "0.0.1"
+
 namespace Jenjin {
 // The main engine class that manages the game loop
 // and scene management.

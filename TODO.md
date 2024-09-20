@@ -5,15 +5,14 @@
 - [x] Editor renderring game to texture for embedding in ImGui
 - [x] Scene editing
 - [x] Add Lua and Sol2 bindings
+- [x] Add reloading of Lua scripts
+- [x] Support loading scenes from serialized data
 - [ ] Add type definitions for Teal (Lua type checker)
 - [ ] Implement a basic code editor in ImGui
 - [ ] Implement a basic console in ImGui
 - [ ] Build with Teal inside the editor
 - [ ] Add automatic reloading of Lua scripts
-- [ ] Add automatic transpilation of Teal scripts
 - [ ] Storing arbitrary data/data types on `GameObject`s
-- [ ] Support loading scenes from serialized data
-- [ ] Support having a global game state in Lua
 
 ## Optimisation
 - [ ] Revise usages of `push_back`  vs `emplace_back`
