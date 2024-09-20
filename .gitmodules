@@ -14,3 +14,9 @@
 	path = vendor/imgui
 	url = https://github.com/ocornut/imgui
 	branch = docking
+[submodule "vendor/lua"]
+	path = vendor/lua
+	url = https://github.com/lua/lua.git
+[submodule "vendor/sol2"]
+	path = vendor/sol2
+	url = https://github.com/ThePhD/sol2.git

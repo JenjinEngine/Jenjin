@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "editor.h"
+#include "state.h"
 
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -27,6 +28,23 @@ void jenjin_menubar(Jenjin::Scene* scene) {
 			}
 			ImGui::EndMenu();
 		}
+
+		// Controls for state
+		static bool running = State.running;
+		ImGui::Checkbox("Running", &State.running);
+		if (running != State.running) {
+			running = State.running;
+			if (State.running) {
+				std::ofstream os("test.jenscene");
+			  scene->save(os);
+			} else {
+				scene->m_game_objects.clear();
+				std::ifstream is("test.jenscene");
+				scene->load(is);
+				scene->update_lua_ptrs();
+			}
+		}
+
 		ImGui::EndMainMenuBar();
 	}
 

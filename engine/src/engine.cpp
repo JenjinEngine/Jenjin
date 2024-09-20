@@ -155,7 +155,8 @@ void Engine_t::add_scene(Scene* scene, bool active) {
 		if (width != 1 && height != 1) {
 			active_scene->resize(window, width, height);
 		}
-		spdlog::trace("Resized scene on line {}", __LINE__ - 1);
+
+		active_scene->update_lua_ptrs();
 	}
 }
 
@@ -166,6 +167,7 @@ void Engine_t::activate_scene(unsigned int index) {
 	}
 
 	active_scene = m_scenes[index];
+	active_scene->update_lua_ptrs();
 
 	// Resize the scene
 	int width, height;

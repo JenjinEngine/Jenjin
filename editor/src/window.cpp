@@ -1,6 +1,8 @@
 #include "window.h"
 #include "engine.h"
 
+#include "state.h"
+
 #include <spdlog/spdlog.h>
 #include <GLFW/glfw3.h>
 
@@ -76,10 +78,17 @@ void Window::launch(int width, int height) {
 	glfwSetWindowSize(context, width, height);
 
 	while (!glfwWindowShouldClose(context)) {
-		glClearColor(0.07f, 0.13f, 0.17f, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
+		if (Jenjin::Engine->running) {
+			if (State.stepping || State.running) {
+				Jenjin::Engine->active_scene->update();
+				State.stepping = false;
+			}
+		}
 
 		glfwPollEvents();
+
+		glClearColor(0.07f, 0.13f, 0.17f, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

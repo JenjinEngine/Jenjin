@@ -47,3 +47,15 @@ list (APPEND IMGUI_HEADERS imgui/backends/imgui_impl_glfw.h imgui/backends/imgui
 
 include_directories(imgui)
 add_library(imgui STATIC ${IMGUI_SOURCES} ${IMGUI_HEADERS})
+
+# --- Lua ---
+file (GLOB LUA_SOURCES lua/*.c)
+file (GLOB LUA_HEADERS lua/*.h)
+
+include_directories(lua)
+
+add_library(lua STATIC ${LUA_SOURCES} ${LUA_HEADERS})
+
+# --- Sol2 ---
+include_directories(sol2)
+add_subdirectory(sol2)

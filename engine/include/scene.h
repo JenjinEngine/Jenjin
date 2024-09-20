@@ -3,6 +3,7 @@
 
 #include "gameobject.h"
 #include "camera.h"
+#include "luamanager.h"
 #include "shader.h"
 #include "mesh.h"
 #include "texture.h"
@@ -44,6 +45,7 @@ public:
 	void add_gameobject(std::shared_ptr<GameObject> game_object);
 	void add_gameobjects(std::vector<std::shared_ptr<GameObject>> game_objects);
 
+	GameObject* get_gameobject_ptr(const std::string& name);
 	std::shared_ptr<GameObject> get_gameobject(std::string name);
 
 	// Texture management
@@ -60,6 +62,9 @@ public:
 
 	// Game object pointers
 	std::vector<std::shared_ptr<GameObject>> m_game_objects;
+
+	// Lua management
+	void update_lua_ptrs();
 
 private:
 	// Game object pointers
@@ -80,6 +85,9 @@ private:
 	// Default resources
 	Shader m_default_shader = Shader("engine/shaders/vshader.glsl", "engine/shaders/fshader.glsl");
 	Camera m_default_camera;
+
+	// Lua management
+	LuaManager m_lua_manager;
 };
 }
 

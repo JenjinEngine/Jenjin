@@ -28,11 +28,19 @@ public:
 	void set_scale(glm::vec2 scale);
 	void set_color(glm::vec3 color);
 	void set_mesh_id(int mesh_id);
-	void set_id(int id);
 	void set_name(std::string name);
 
 	void set_texture(std::string path, bool alpha = false, void* scene = nullptr);
 	void remove_texture();
+
+	// Getters
+	Transform get_transform();
+	glm::vec2 get_position();
+	float get_rotation();
+	glm::vec2 get_scale();
+	glm::vec3 get_color();
+	int get_mesh_id();
+	std::string get_name();
 
 	// Modifiers
 	void translate(glm::vec2 translation);

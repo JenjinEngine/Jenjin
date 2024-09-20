@@ -1,6 +1,7 @@
 #include "engine.h"
 #include "scene.h"
 
+#include "state.h"
 #include "window.h"
 #include "editor.h"
 
@@ -16,10 +17,25 @@ int main(void) {
 	window.render([&](Jenjin::Scene* scene) {
 		jenjin_menubar(scene);
 
+		if (State.running) {
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.239f, 0.082f, 0.082f, 0.94f));
+			// set the frame color of a docked window (the window bg frame)
+			ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.239f, 0.082f, 0.082f, 0.94f));
+			ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.339f, 0.182f, 0.182f, 0.94f));
+
+		}
+
 		int dockspace_id = jenjin_dockspace();
 
 		ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
 		jenjin_explorer(scene);
+
+		if (State.running) {
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+		}
+
 		ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
 		jenjin_viewport();
 

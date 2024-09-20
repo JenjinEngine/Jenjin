@@ -116,12 +116,28 @@ void Scene::build() {
 	glEnableVertexAttribArray(1);
 
 	spdlog::debug("Scene buffers built");
+
+	if (!Engine->running) {
+		this->m_lua_manager.script_file("test.lua");
+	}
+
+	/* spdlog::debug("Readying lua manager"); */
+	/* this->m_lua_manager.ready(); */
 }
 
 void Scene::update() {
 	if (this->m_update_callback) {
 		this->m_update_callback(this);
 	}
+
+	static bool ready = false;
+	if (!ready) {
+		this->m_lua_manager.ready();
+		ready = true;
+	}
+
+	if (Engine->active_scene != nullptr)
+		this->m_lua_manager.update();
 }
 
 void Scene::render() {
@@ -323,6 +339,16 @@ void Scene::add_gameobjects(std::vector<std::shared_ptr<GameObject>> game_object
 	}
 }
 
+GameObject* Scene::get_gameobject_ptr(const std::string& name) {
+	for (auto& go : this->m_game_objects) {
+		if (go->name == name) {
+			return go.get();
+		}
+	}
+
+	return nullptr;
+}
+
 std::shared_ptr<GameObject> Scene::get_gameobject(std::string name) {
 	for (auto& go : this->m_game_objects) {
 		if (go->name == name) {
@@ -437,4 +463,9 @@ void Scene::load(std::istream& is) {
 	}
 
 	this->build();
+}
+
+void Scene::update_lua_ptrs() {
+	this->m_lua_manager.update_ptrs();
+	this->m_lua_manager.ready();
 }

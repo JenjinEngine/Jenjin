@@ -41,6 +41,14 @@ void GameObject::set_color(glm::vec3 color) { this->color = color; }
 void GameObject::set_mesh_id(int mesh_id) { this->mesh_id = mesh_id; }
 void GameObject::set_name(std::string name) { this->name = name; }
 
+Transform GameObject::get_transform() { return transform; }
+glm::vec2 GameObject::get_position() { return transform.position; }
+float GameObject::get_rotation() { return transform.rotation; }
+glm::vec2 GameObject::get_scale() { return transform.scale; }
+glm::vec3 GameObject::get_color() { return color; }
+int GameObject::get_mesh_id() { return mesh_id; }
+std::string GameObject::get_name() { return name; }
+
 void GameObject::set_texture(std::string path, bool alpha, void* scene) {
 	this->texture_path = path;
 	this->alpha = alpha;
