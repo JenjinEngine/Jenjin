@@ -1,5 +1,4 @@
-#ifndef JENJIN_CAMERA_H
-#define JENJIN_CAMERA_H
+#pragma once
 
 #include "shader.h"
 
@@ -41,5 +40,3 @@ public:
 	float aspect_ratio = 1.0f;
 };
 }
-
-#endif // JENJIN_CAMERA_H

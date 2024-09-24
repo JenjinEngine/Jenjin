@@ -1,5 +1,4 @@
-#ifndef JENJIN_MESH_H
-#define JENJIN_MESH_H
+#pragma once
 
 #include <glm.hpp>
 
@@ -34,5 +33,3 @@ public:
 	int index_count;
 };
 }
-
-#endif // JENJIN_MESH_H

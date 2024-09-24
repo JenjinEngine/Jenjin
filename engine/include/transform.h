@@ -1,5 +1,4 @@
-#ifndef JENJIN_TRANSFORM_H
-#define JENJIN_TRANSFORM_H
+#pragma once
 
 #include <glm.hpp>
 
@@ -10,5 +9,3 @@ struct Transform {
 	glm::vec2 position = glm::vec2(0.0f, 0.0f);
 	float rotation = 0.0f;
 };
-
-#endif // JENJIN_TRANSFORM_H

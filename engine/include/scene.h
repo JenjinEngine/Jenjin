@@ -1,5 +1,4 @@
-#ifndef JENJIN_SCENE_H
-#define JENJIN_SCENE_H
+#pragma once
 
 #include "gameobject.h"
 #include "camera.h"
@@ -97,5 +96,3 @@ private:
 	LuaManager m_lua_manager;
 };
 }
-
-#endif

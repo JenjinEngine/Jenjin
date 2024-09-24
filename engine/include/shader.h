@@ -1,5 +1,4 @@
-#ifndef JENJIN_SHADER_H
-#define JENJIN_SHADER_H
+#pragma once
 
 #include <glad/glad.h>
 #include <glm.hpp>
@@ -27,5 +26,3 @@ public:
 	void set(const char* name, glm::vec3 value);
 };
 }
-
-#endif

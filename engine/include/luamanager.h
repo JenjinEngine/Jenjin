@@ -1,5 +1,4 @@
-#ifndef JENJIN_LUA_MANAGER_H
-#define JENJIN_LUA_MANAGER_H
+#pragma once
 
 #include "sol/forward.hpp"
 #include "sol/state.hpp"
@@ -32,5 +31,3 @@ private:
 	void bindings();
 };
 }
-
-#endif // JENJIN_LUA_MANAGER_H

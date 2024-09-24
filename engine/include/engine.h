@@ -1,5 +1,4 @@
-#ifndef JENJIN_ENGINE_H
-#define JENJIN_ENGINE_H
+#pragma once
 
 #include "framebuffer.h"
 #ifdef JENJIN_HEADLESS
@@ -53,5 +52,3 @@ private:
 #endif
 } extern* Engine;
 }
-
-#endif // JENJIN_ENGINE_H

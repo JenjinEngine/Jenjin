@@ -1,5 +1,4 @@
-#ifndef JENJIN_GAMEOBJECT_H
-#define JENJIN_GAMEOBJECT_H
+#pragma once
 
 #include "mesh.h"
 #include "transform.h"
@@ -70,5 +69,3 @@ public:
 	int texture_id = -1;
 };
 }
-
-#endif // JENJIN_GAMEOBJECT_H

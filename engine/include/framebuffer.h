@@ -1,5 +1,4 @@
-#ifndef JENJIN_FRAMEBUFFER_H
-#define JENJIN_FRAMEBUFFER_H
+#pragma once
 
 #include <glad/glad.h>
 
@@ -21,5 +20,3 @@ private:
 	GLuint rbo;
 };
 }
-
-#endif // JENJIN_FRAMEBUFFER_H

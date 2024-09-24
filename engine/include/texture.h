@@ -1,5 +1,4 @@
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#pragma once
 
 #include <string>
 
@@ -15,5 +14,3 @@ public:
 private:
 	std::string m_image_path;
 };
-
-#endif
