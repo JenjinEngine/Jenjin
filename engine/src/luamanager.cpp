@@ -139,6 +139,8 @@ void LuaManager::bindings() {
 	this->state["print_name"] = [](GameObject* go) {
 		spdlog::info("GameObject name: {}", go->name);
 	};
+
+	this->script_file("test.lua");
 }
 
 void LuaManager::script(std::string code) {
@@ -151,6 +153,8 @@ void LuaManager::script(std::string code) {
 }
 
 void LuaManager::script_file(std::string file) {
+	spdlog::trace("script_file(\"{}\")", file);
+
 	sol::protected_function_result result = state.safe_script_file(file);
 
 	if (!result.valid()) {

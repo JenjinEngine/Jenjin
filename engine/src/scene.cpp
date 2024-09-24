@@ -117,9 +117,9 @@ void Scene::build() {
 
 	spdlog::debug("Scene buffers built");
 
-	if (!Engine->running) {
-		this->m_lua_manager.script_file("test.lua");
-	}
+	/* if (!Engine->running) { */
+	/* 	this->m_lua_manager.script_file("test.lua"); */
+	/* } */
 
 	/* spdlog::debug("Readying lua manager"); */
 	/* this->m_lua_manager.ready(); */

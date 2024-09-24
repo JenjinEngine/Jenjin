@@ -196,6 +196,10 @@ void Engine_t::launch(int width, int height, const char* title) {
 	// Main loop
 	glClearColor(0.07f, 0.13f, 0.17f, 1.0);
 	while (!glfwWindowShouldClose(window)) {
+		for (auto& scene : m_scenes) {
+			scene->update();
+		}
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		ImGui_ImplOpenGL3_NewFrame();
