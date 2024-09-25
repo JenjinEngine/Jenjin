@@ -29,10 +29,6 @@ Window::Window(int width, int height, const char* title) {
 	context = glfwCreateWindow(width, height, title, NULL, NULL);
 
 	if (!context) {
-		const char* description;
-		int error = glfwGetError(&description);
-		spdlog::error("Failed to create window: {} ({})", description, error);
-
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
@@ -54,7 +50,23 @@ Window::Window(int width, int height, const char* title) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-	ImGui::StyleColorsDark();
+	ImGuiStyle& style = ImGui::GetStyle();
+	for (int i = 0; i < ImGuiCol_COUNT; i++) {
+		static ImVec4* colors = style.Colors;
+		float h, s, v; ImGui::ColorConvertRGBtoHSV(colors[i].x, colors[i].y, colors[i].z, h, s, v);
+		h = 0; // red
+		float r, g, b; ImGui::ColorConvertHSVtoRGB(h, s, v, r, g, b);
+		colors[i] = ImVec4(r, g, b, colors[i].w);
+	}
+
+	// Make everything round (sharp == harsh in design i think?)
+	style.FrameRounding = 4.0f;
+	style.WindowRounding = 4.0f;
+
+	// Disable window frame
+	style.WindowBorderSize = 0.0f;
+
+	io.Fonts->AddFontFromFileTTF("engine/resources/fonts/Roboto-Medium.ttf", 16.0f);
 
 	ImGui_ImplGlfw_InitForOpenGL(context, true);
 	ImGui_ImplOpenGL3_Init("#version 460");

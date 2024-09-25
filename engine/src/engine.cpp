@@ -194,7 +194,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 	this->running = true;
 
 	// Main loop
-	glClearColor(0.07f, 0.13f, 0.17f, 1.0);
+	/* glClearColor(0.57f, 0.13f, 0.17f, 1.0); */
 	while (!glfwWindowShouldClose(window)) {
 		for (auto& scene : m_scenes) {
 			scene->update();
@@ -208,6 +208,8 @@ void Engine_t::launch(int width, int height, const char* title) {
 
 		// Render the active scene
 		if (active_scene) {
+			glm::vec3* clearColor = &active_scene->m_default_camera.clearColor;
+			glClearColor(clearColor->r, clearColor->g, clearColor->b, 1.0f);
 			active_scene->render();
 		} else {
 			spdlog::warn("No active scene");
@@ -243,7 +245,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 // externally.
 //
 // This function is used to render the engines view into an ImGui window
-void Engine_t::render_into_imgui(int width, int height) {
+void Engine_t::render_into_imgui(int width, int height, bool preview) {
 	if (ow != width || oh != height) {
 		ow = width;
 		oh = height;
@@ -253,11 +255,14 @@ void Engine_t::render_into_imgui(int width, int height) {
 	// Bind the framebuffer
 	framebuffer.bind();
 	// Clear the framebuffer
-	glClearColor(0.07f, 0.13f, 0.17f, 1.0);
+	// we want to do something like this: (but this takes 4 floats)
+	/* glClearColor(this->active_scene->m_default_camera.clearColor); */
+	glm::vec3* clearColor = &this->active_scene->m_default_camera.clearColor;
+	glClearColor(clearColor->r, clearColor->g, clearColor->b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	// Render the active scene
 	if (active_scene) {
-		active_scene->render();
+		active_scene->render(preview);
 	} else {
 		spdlog::warn("No active scene");
 	}

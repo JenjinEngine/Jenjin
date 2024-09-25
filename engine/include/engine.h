@@ -33,13 +33,17 @@ public:
 	// Engine state
 	bool running = false;
 
+#ifdef JENJIN_HEADLESS
+	bool editor = false;
+#endif
+
 	void set_window(GLFWwindow* window) {
 		this->window = window;
 	}
 
 #ifdef JENJIN_HEADLESS
 	Framebuffer framebuffer;
-	void render_into_imgui(int width, int height);
+	void render_into_imgui(int width, int height, bool preview = false);
 #endif
 
 private:

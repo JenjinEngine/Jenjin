@@ -1,4 +1,5 @@
 #include "luamanager.h"
+#include "camera.h"
 #include "engine.h"
 #include "sol/forward.hpp"
 #include "sol/types.hpp"
@@ -63,8 +64,21 @@ void LuaManager::bindings() {
 																 "build", &Scene::build,
 																 "load", &Scene::load,
 																 "update", &Scene::update,
-																 "save", &Scene::save
+																 "save", &Scene::save,
+																 "get_editor_camera", &Scene::get_editor_camera,
+																 "get_default_camera", &Scene::get_default_camera
 																 );
+
+	this->state.new_usertype<Camera>("Camera",
+																	"position", &Camera::position,
+																	"rotation", &Camera::rotation,
+																	"set_position", &Camera::set_position,
+																	"set_rotation", &Camera::set_rotation,
+																	"set_aspect_ratio", &Camera::set_aspect_ratio,
+																	"get_aspect_ratio", &Camera::get_aspect_ratio,
+																	"get_rotation", &Camera::get_rotation,
+																	"get_position", &Camera::get_position
+																	);
 
 	this->state.new_usertype<GameObject>("GameObject",
 																			"set_transform", &GameObject::set_transform,
@@ -153,7 +167,7 @@ void LuaManager::script(std::string code) {
 }
 
 void LuaManager::script_file(std::string file) {
-	spdlog::trace("script_file(\"{}\")", file);
+	spdlog::trace("LuaManager::script_file(\"{}\")", file);
 
 	sol::protected_function_result result = state.safe_script_file(file);
 

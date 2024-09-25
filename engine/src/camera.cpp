@@ -38,6 +38,7 @@ void Camera::processInput(GLFWwindow* window) {
 
 void Camera::bind_uniforms(Shader& shader) {
 	m_view = glm::lookAt(this->position, this->position + cameraFront, cameraUp);
+	m_view = glm::rotate(m_view, -glm::radians(this->rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	shader.set("u_view", m_view);
 }
 

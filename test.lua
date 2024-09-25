@@ -1,12 +1,11 @@
-local target, bounds = nil, nil
-local velocity = vec2.new(0.4, 0.3)
+local target, bounds, cam = nil, nil, nil
+local velocity = vec2.new(2.4, 0.3)
 
 function ready()
 	target = scene:get_gameobject("Face")
 	bounds = scene:get_gameobject("Container")
 
-	-- target:set_position(vec2.new(0, 0))
-	-- bounds:set_position(vec2.new(0, 0))
+	cam = scene:get_default_camera()
 end
 
 function update()
@@ -19,6 +18,9 @@ function update()
 	local bottom = -height + bounds:get_position().y
 
 	local position = target:get_position()
+
+	-- random
+	cam:set_rotation(math.random(-1, 1))
 
 	if position.x >= right or position.x <= left then
 		velocity.x = velocity.x * -1

@@ -13,12 +13,17 @@ int main(void) {
 	Jenjin::Engine = new Jenjin::Engine_t();
 	Jenjin::Engine->set_window(window.context);
 	Jenjin::Engine->running = true;
+	Jenjin::Engine->editor = true;
 
 	auto scene = new Jenjin::Scene("test.jenscene");
 	Jenjin::Engine->add_scene(scene, true);
 
 	window.render([&](GLFWwindow* context) {
 		editor.show_all(Jenjin::Engine->active_scene);
+
+		if (!Jenjin::Engine->editor) {
+			Jenjin::Engine->active_scene->update();
+		}
 	});
 
 	window.launch();

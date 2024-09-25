@@ -35,7 +35,9 @@ public:
 
 	// Updaters
 	void update();
-	void render();
+	void render(bool preview = false);
+
+	void remove_gameobject(GameObject* game_object);
 
 	// Debugging
 	void debug_menu(bool separate_window = true);
@@ -62,6 +64,10 @@ public:
 	// Game object pointers
 	std::vector<std::shared_ptr<GameObject>> m_game_objects;
 
+	// Getters
+	Camera* get_editor_camera() { return &m_editor_camera; }
+	Camera* get_default_camera() { return &m_default_camera; }
+
 	// Lua management
 	void update_lua_ptrs() {
 		m_lua_manager.update_ptrs();
@@ -71,6 +77,9 @@ public:
 		m_lua_manager.reload_files();
 		this->update_lua_ptrs();
 	}
+
+	Camera m_editor_camera;
+	Camera m_default_camera;
 
 private:
 	// Game object pointers
@@ -90,7 +99,6 @@ private:
 
 	// Default resources
 	Shader m_default_shader = Shader("engine/shaders/vshader.glsl", "engine/shaders/fshader.glsl");
-	Camera m_default_camera;
 
 	// Lua management
 	LuaManager m_lua_manager;

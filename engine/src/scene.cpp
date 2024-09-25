@@ -1,15 +1,15 @@
 #include "scene.h"
 #include "engine.h"
-#include "ext/matrix_transform.hpp"
-#include "fwd.hpp"
 #include "gameobject.h"
-#include "gtc/type_ptr.hpp"
 #include "mesh.h"
 
-#include <fstream>
-
+#include <ext/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 #include <spdlog/spdlog.h>
+#include <fwd.hpp>
 #include <imgui.h>
+
+#include <fstream>
 
 using namespace Jenjin;
 
@@ -46,8 +46,12 @@ void Scene::resize(GLFWwindow* window, int width, int height) {
 		this->m_resize_callback(this, window, width, height);
 
 	glViewport(0, 0, width, height);
+
 	m_default_camera.set_aspect_ratio((float)width / (float)height);
 	m_default_camera.setup_proj(m_default_shader);
+
+	m_editor_camera.set_aspect_ratio((float)width / (float)height);
+	m_editor_camera.setup_proj(m_default_shader);
 }
 
 void Scene::build() {
@@ -140,19 +144,21 @@ void Scene::update() {
 		this->m_lua_manager.update();
 }
 
-void Scene::render() {
+void Scene::render(bool preview) {
 	if (this->m_render_callback) {
 		this->m_render_callback(this);
 	}
 
-	this->m_default_shader.use();
-
-/* #ifndef NDEBUG */
-	m_default_camera.processInput(glfwGetCurrentContext());
-/* #endif */
-
-	m_default_camera.setup_proj(m_default_shader);
-	m_default_camera.bind_uniforms(m_default_shader);
+	if (preview) {
+		this->m_default_shader.use();
+		m_default_camera.setup_proj(m_default_shader);
+		m_default_camera.bind_uniforms(m_default_shader);
+	} else {
+		this->m_default_shader.use();
+		m_editor_camera.processInput(glfwGetCurrentContext());
+		m_editor_camera.setup_proj(m_default_shader);
+		m_editor_camera.bind_uniforms(m_default_shader);
+	}
 
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
@@ -188,6 +194,17 @@ void Scene::render() {
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, meshref.index_count, GL_UNSIGNED_INT, 0, meshref.base_vertex);
 	}
+}
+
+void Scene::remove_gameobject(GameObject* game_object) {
+	for (auto it = this->m_game_objects.begin(); it != this->m_game_objects.end(); it++) {
+		if (it->get() == game_object) {
+			this->m_game_objects.erase(it);
+			break;
+		}
+	}
+
+	this->build();
 }
 
 void Scene::debug_menu(bool separate_window) {
