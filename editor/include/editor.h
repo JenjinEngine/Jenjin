@@ -4,6 +4,8 @@
 #include "imgui.h"
 #include "scene.h"
 
+#include "zepwrapper.h"
+
 namespace JenjinEditor {
 enum RenderableWindow {
 	Scene,
@@ -37,5 +39,8 @@ private:
 	ImVec2 renderableWindowSize = ImVec2(-1, -1);
 
 	char renameGameObjectBuffer[256] = { 0 };
+
+	std::string startupFilePath;
+	ZepContainerImGui zep = ZepContainerImGui(startupFilePath, "zep/config");
 };
 }

@@ -59,3 +59,7 @@ add_library(lua STATIC ${LUA_SOURCES} ${LUA_HEADERS})
 # --- Sol2 ---
 include_directories(sol2)
 add_subdirectory(sol2)
+
+# --- Zep ---
+add_subdirectory(zep)
+include_directories(zep/include)

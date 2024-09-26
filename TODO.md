@@ -7,9 +7,10 @@
 - [x] Add Lua and Sol2 bindings
 - [x] Add reloading of Lua scripts
 - [x] Support loading scenes from serialized data
-- [ ] Add type definitions for Teal (Lua type checker)
-- [ ] Implement a basic code editor in ImGui
+- [x] Implement a basic code editor in ImGui
+- [x] Implement proper syntax highlighting for Lua
 - [ ] Implement a basic console in ImGui
+- [ ] Add type definitions for Teal (Lua type checker)
 - [ ] Build with Teal inside the editor
 - [ ] Add automatic reloading of Lua scripts
 - [ ] Storing arbitrary data/data types on `GameObject`s

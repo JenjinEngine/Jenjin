@@ -15,6 +15,7 @@ target_include_directories(JenjinEngine
 				${CMAKE_SOURCE_DIR}/vendor/stb
 				${CMAKE_SOURCE_DIR}/vendor/lua
 				${CMAKE_SOURCE_DIR}/vendor/sol2/include
+				${CMAKE_SOURCE_DIR}/vendor/zep/include
 				${CMAKE_SOURCE_DIR}/vendor/
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src

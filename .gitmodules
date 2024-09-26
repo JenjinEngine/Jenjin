@@ -20,3 +20,6 @@
 [submodule "vendor/sol2"]
 	path = vendor/sol2
 	url = https://github.com/ThePhD/sol2.git
+[submodule "vendor/zep"]
+	path = vendor/zep
+	url = https://github.com/Rezonality/zep.git

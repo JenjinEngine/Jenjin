@@ -2,6 +2,7 @@
 #include "GLFW/glfw3.h"
 #include "engine.h"
 #include "scene.h"
+#include "zep/mode_standard.h"
 
 #include <imgui_internal.h>
 #include <imgui.h>
@@ -486,11 +487,52 @@ void Editor::backup_prompts(Jenjin::Scene* scene) {
 }
 
 void Editor::code(Jenjin::Scene* scene) {
-	ImGui::Begin("Code");
+	const auto pBuffer =  zep.GetEditor().GetActiveBuffer();
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+	ImGui::Begin("Code", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar);
+	bool isFocused = ImGui::IsWindowFocused();
+	// if it's focussed and we save with ctrl + s... reload the lua
+	if (isFocused && ImGui::IsKeyDown(ImGui::GetKeyIndex(ImGuiKey_S)) && ImGui::GetIO().KeyCtrl) {
+		Jenjin::Engine->active_scene->reload_lua();
+	}
 
-	ImGui::Text("Put ZEP embedded code editor here");
+	// Show menu at top of code window
+	static bool openedFile = false;
+	if (!openedFile) {
+		auto pBuf = zep.GetEditor().GetFileBuffer("test.lua");
+		if (pBuf) zep.GetEditor().EnsureWindow(*pBuf);
+		openedFile = true;
+
+		// Disable vim mode (people get confused) (NOTE: we want to be able to turn this back on optionally!)
+		zep.GetEditor().SetGlobalMode(Zep::ZepMode_Standard::StaticName());
+
+		/* zep.GetEditor().SaveBuffer(*pBuf); */
+		zep.GetEditor().SetBufferSyntax(*pBuf);
+	}
+
+	auto min = ImGui::GetCursorScreenPos();
+	auto max = ImGui::GetWindowSize();
+	max.x = std::max(1.0f, max.x);
+	max.y = std::max(1.0f, max.y);
+
+	// Fill the window
+	max.x = min.x + max.x;
+	max.y = min.y + max.y;
+	zep.spEditor->SetDisplayRegion(Zep::NVec2f(min.x, min.y), Zep::NVec2f(max.x, max.y));
+
+	// Display the editor inside this window
+	if (isFocused) zep.spEditor->HandleInput();
+	zep.spEditor->Display();
+
+	ImGui::Spacing();
 
 	ImGui::End();
+	ImGui::PopStyleVar(4);
+	ImGui::PopStyleColor(1);
 }
 
 void Editor::show_all(Jenjin::Scene* scene) {
