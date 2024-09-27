@@ -17,6 +17,8 @@ public:
 	Editor();
 
 	void menu();
+	void welcome();
+
 	void dockspace();
 
 	void controls(Jenjin::Scene* scene);

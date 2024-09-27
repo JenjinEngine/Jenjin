@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "imgui.h"
 
+#include <filesystem>
 #include <spdlog/spdlog.h>
 
 #include <cstdlib>
@@ -94,4 +95,24 @@ void Window::launch() {
 
 	glfwDestroyWindow(context);
 	glfwTerminate();
+}
+
+void ensure_dir(std::string path) {
+	if (!std::filesystem::exists(path)) {
+		spdlog::debug("Creating directory: {}", path);
+		std::filesystem::create_directories(path);
+	} else {
+		spdlog::debug("Directory exists: {}", path);
+	}
+}
+
+std::string get_jendir() {
+	std::string jendir = "";
+#ifdef _WIN32
+	jendir = std::getenv("USERPROFILE") + std::string("\\Documents\\Jenjin");
+#elif __APPLE__ || __linux__
+	jendir = std::getenv("HOME") + std::string("/Documents/Jenjin");
+#endif
+
+	return jendir;
 }

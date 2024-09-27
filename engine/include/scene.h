@@ -73,7 +73,12 @@ public:
 		m_lua_manager.update_ptrs();
 		m_lua_manager.ready();
 	}
-	void reload_lua() {
+
+	void reload_lua(const char* path = nullptr) {
+		if (path) {
+			m_lua_manager.script_dir(path, true);
+		}
+
 		m_lua_manager.reload_files();
 		this->update_lua_ptrs();
 	}

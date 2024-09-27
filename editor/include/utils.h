@@ -1,12 +1,14 @@
 #pragma once
 
-#include <functional>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
+#include <string>
+#include <functional>
 
 namespace JenjinEditor {
 class Window {
@@ -25,3 +27,6 @@ private:
 	std::function<void(GLFWwindow*)> m_renderCallback;
 };
 }
+
+void ensure_dir(std::string path);
+std::string get_jendir();

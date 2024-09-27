@@ -15,6 +15,7 @@ public:
 
 	void script(std::string code);
 	void script_file(std::string file);
+	void script_dir(std::string dirPath, bool deleteOthers = false);
 
 	void reload_files();
 
@@ -22,6 +23,8 @@ public:
 	void update();
 
 	void update_ptrs();
+
+	void load_files();
 
 private:
 	sol::state state;

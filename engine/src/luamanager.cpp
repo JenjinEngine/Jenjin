@@ -1,14 +1,16 @@
 #include "luamanager.h"
 #include "camera.h"
 #include "engine.h"
-#include "sol/forward.hpp"
-#include "sol/types.hpp"
 
 #include <sol/protected_function_result.hpp>
+#include <sol/forward.hpp>
+#include <sol/types.hpp>
 #include <sol/raii.hpp>
 #include <sol/resolve.hpp>
 #include <spdlog/spdlog.h>
 #include <sol/sol.hpp>
+
+#include <filesystem>
 
 using namespace Jenjin;
 
@@ -153,8 +155,6 @@ void LuaManager::bindings() {
 	this->state["print_name"] = [](GameObject* go) {
 		spdlog::info("GameObject name: {}", go->name);
 	};
-
-	this->script_file("test.lua");
 }
 
 void LuaManager::script(std::string code) {
@@ -183,6 +183,20 @@ void LuaManager::script_file(std::string file) {
 	this->m_functions[file] = std::make_pair(ready, update);
 }
 
+void LuaManager::script_dir(std::string dirPath, bool deleteOthers) {
+	spdlog::trace("LuaManager::script_dir(\"{}\")", dirPath);
+
+	if (deleteOthers) {
+		this->m_functions.clear();
+	}
+
+	for (const auto &entry : std::filesystem::directory_iterator(dirPath)) {
+		if (entry.is_regular_file() && entry.path().extension() == ".lua") {
+			this->script_file(entry.path().string());
+		}
+	}
+}
+
 void LuaManager::reload_files() {
 	spdlog::trace("LuaManager::reload_files()");
 
@@ -191,8 +205,6 @@ void LuaManager::reload_files() {
 	paths.push_back(pair.first);
 
 	this->m_functions.clear();
-
-	this->state.stack_clear();
 
 	for (auto &path : paths) {
 		spdlog::debug("[LUA] Reloading file: {}", path);
