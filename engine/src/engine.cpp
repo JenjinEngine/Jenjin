@@ -131,7 +131,7 @@ Engine_t::Engine_t() {
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("engine/resources/fonts/Roboto-Medium.ttf", 16.0f);
 #else
 	spdlog::debug("Jenjin is in headless mode");
-	void(glfwGetKeyScancode(0));
+	void(glfwGetKeyScancode(GLFW_KEY_ESCAPE));
 	if (glfwGetError(nullptr) == GLFW_NOT_INITIALIZED) {
 		spdlog::error("Jenjin headless mode requires GLFW to be initialized externally");
 		exit(EXIT_FAILURE);
@@ -246,7 +246,7 @@ void Engine_t::launch(int width, int height, const char* title) {
 //
 // This function is used to render the engines view into an ImGui window
 void Engine_t::render_into_imgui(int width, int height, bool preview) {
-	if (ow != width || oh != height) {
+	if (ow != width || oh != height && width != -1 && height != -1) {
 		ow = width;
 		oh = height;
 		framebuffer.resize(width, height);
