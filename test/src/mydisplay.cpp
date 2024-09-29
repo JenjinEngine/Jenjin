@@ -1,4 +1,4 @@
-#include "display.h"
+#include "mydisplay.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -9,8 +9,8 @@
 
 #include <spdlog/spdlog.h>
 
-void Display::PreRender() {
-	spdlog::trace("Display::PreRender");
+void MyDisplay::PreRender() {
+	spdlog::trace("MyDisplay::PreRender");
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -20,8 +20,8 @@ void Display::PreRender() {
 	ImGui::NewFrame();
 }
 
-void Display::Render() {
-	spdlog::trace("Display::Render");
+void MyDisplay::Render() {
+	spdlog::trace("MyDisplay::Render");
 
 	ImGui::Begin("Test UI");
 
@@ -30,8 +30,8 @@ void Display::Render() {
 	ImGui::End();
 }
 
-void Display::PostRender() {
-	spdlog::trace("Display::PostRender");
+void MyDisplay::PostRender() {
+	spdlog::trace("MyDisplay::PostRender");
 
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -39,19 +39,19 @@ void Display::PostRender() {
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-glm::vec2 Display::GetSize() {
-	spdlog::trace("Display::GetSize");
+glm::vec2 MyDisplay::GetSize() {
+	spdlog::trace("MyDisplay::GetSize");
 
 	int w,h; glfwGetWindowSize(glfwGetCurrentContext(), &w, &h);
 	return glm::vec2(w, h);
 }
 
-void Display::Resize(glm::vec2 size) {
-  glfwSetWindowSize(glfwGetCurrentContext(), size.x, size.y);
+void MyDisplay::Resize(glm::vec2 size) {
+	glfwSetWindowSize(glfwGetCurrentContext(), size.x, size.y);
 	glViewport(0, 0, size.x, size.y);
 }
 
-glm::vec2 Display::GetMousePosition() {
+glm::vec2 MyDisplay::GetMousePosition() {
 	double x,y; glfwGetCursorPos(glfwGetCurrentContext(), &x, &y);
 	return glm::vec2(x, y);
 }

@@ -1,7 +1,8 @@
 #include "jenjin/engine.h"
 #include "jenjin/helpers.h"
 
-#include "display.h"
+#include "jenjin/scene.h"
+#include "mydisplay.h"
 
 #include <spdlog/spdlog.h>
 
@@ -12,10 +13,17 @@ int main(void) {
 
 	Jenjin::Engine engine(window);
 
-	Display display;
+	auto scene = std::make_shared<Jenjin::Scene>();
+	auto gameObject = std::make_shared<Jenjin::GameObject>(Jenjin::Helpers::CreateQuad(2, 2));
+	scene->AddGameObject(gameObject);
+	scene->Build();
+
+	engine.AddScene(scene, true);
+
+	MyDisplay mydisplay;
 
 	while (!glfwWindowShouldClose(window)) {
-		engine.Render(&display);
+		engine.Render(&mydisplay);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

@@ -45,4 +45,18 @@ void InitiateImGui(GLFWwindow* window) {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 }
+
+Mesh CreateQuad(int width, int height) {
+	Mesh mesh;
+
+	mesh.vertices = {
+		Vertex{{-width / 2, -height / 2, 0.0f}, {0.0f, 0.0f, 0.0f}},
+		Vertex{{width / 2, -height / 2, 0.0f}, {1.0f, 0.0f, 0.0f}},
+		Vertex{{width / 2, height / 2, 0.0f}, {1.0f, 1.0f, 0.0f}},
+		Vertex{{-width / 2, height / 2, 0.0f}, {0.0f, 1.0f, 0.0f}},
+	};
+
+	mesh.indices = {0, 1, 2, 2, 3, 0};
+	return mesh;
+}
 }

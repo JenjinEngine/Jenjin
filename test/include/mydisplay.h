@@ -2,9 +2,9 @@
 
 #include "jenjin/target.h"
 
-class Display : public Jenjin::Target {
+class MyDisplay : public Jenjin::Target {
 public:
-	Display() = default;
+	MyDisplay() = default;
 
 	virtual void PreRender() override;
 	virtual void Render() override;

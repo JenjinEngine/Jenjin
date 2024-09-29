@@ -54,12 +54,26 @@ Engine::Engine(GLFWwindow* window) {
 	});
 }
 
+void Engine::AddScene(std::shared_ptr<Scene> scene, bool defaultScene) {
+	spdlog::trace("Engine::AddScene({}, {})", (void*)scene.get(), defaultScene);
+	scenes.push_back(scene);
+
+	if (defaultScene) {
+		currentScene = scene.get();
+	}
+}
+
 void Engine::Render(Target* target) {
 	spdlog::trace("Engine::Render({})", (void*)target);
 
 	target->PreRender();
 
-	// render stuff
+	if (currentScene) {
+		currentScene->Render();
+	} else {
+		spdlog::warn("No scene to render");
+	}
+
 	target->Render();
 
 	target->PostRender();
