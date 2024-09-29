@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+
+#include <vector>
 
 namespace Jenjin {
 struct MeshReference {

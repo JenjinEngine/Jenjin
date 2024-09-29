@@ -1,7 +1,9 @@
+#include "jenjin/engine.h"
 #include "mydisplay.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -10,8 +12,6 @@
 #include <spdlog/spdlog.h>
 
 void MyDisplay::PreRender() {
-	spdlog::trace("MyDisplay::PreRender");
-
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -21,18 +21,30 @@ void MyDisplay::PreRender() {
 }
 
 void MyDisplay::Render() {
-	spdlog::trace("MyDisplay::Render");
-
 	ImGui::Begin("Test UI");
 
-	ImGui::Text("Hello, world!");
+	static Jenjin::Engine* engine = Jenjin::EngineRef;
+	ImGui::DragFloat2("Camera Position", glm::value_ptr(*engine->GetCurrentScene()->GetCamera()->GetPositionPointer()), 1.0f);
+	ImGui::DragFloat("Camera Zoom", engine->GetCurrentScene()->GetCamera()->GetZoomPointer(), 1.0f);
+
+	auto gobjs = engine->GetCurrentScene()->GetGameObjects();
+
+	int i = 0;
+	for (auto& gobj : *gobjs) {
+		ImGui::PushID(i++);
+		if (ImGui::CollapsingHeader(gobj->GetName().c_str())) {
+			ImGui::Text("%s", gobj->GetName().c_str());
+			ImGui::DragFloat2("Position", glm::value_ptr(*gobj->GetPositionPointer()), 0.01f);
+			ImGui::DragFloat2("Scale", glm::value_ptr(*gobj->GetScalePointer()), 0.01f);
+			ImGui::DragFloat("Rotation", gobj->GetRotationPointer(), 0.01f);
+		}
+		ImGui::PopID();
+	}
 
 	ImGui::End();
 }
 
 void MyDisplay::PostRender() {
-	spdlog::trace("MyDisplay::PostRender");
-
 	ImGui::EndFrame();
 	ImGui::Render();
 
@@ -40,8 +52,6 @@ void MyDisplay::PostRender() {
 }
 
 glm::vec2 MyDisplay::GetSize() {
-	spdlog::trace("MyDisplay::GetSize");
-
 	int w,h; glfwGetWindowSize(glfwGetCurrentContext(), &w, &h);
 	return glm::vec2(w, h);
 }

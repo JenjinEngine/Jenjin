@@ -1,6 +1,9 @@
 #include "jenjin/scene.h"
 #include "jenjin/mesh.h"
 
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/fwd.hpp>
+
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
@@ -9,6 +12,11 @@ using namespace Jenjin;
 
 Scene::Scene() {
 	spdlog::trace("Scene::Scene()");
+}
+
+void Scene::SetTarget(Target* target) {
+	this->target = target;
+	this->camera.Resize(target->GetSize());
 }
 
 void Scene::AddGameObject(std::shared_ptr<GameObject> gameObject) {
@@ -24,6 +32,7 @@ void Scene::Build() {
 
 	// Clear out any old data
 	this->meshReferences.clear();
+	this->meshReferences.reserve(gameObjects.size());
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
@@ -73,13 +82,12 @@ void Scene::Update() {
 }
 
 void Scene::Render() {
-	spdlog::trace("Scene::Render()");
-
 	this->shader.use();
+	this->camera.Use();
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, ebo);
 
-	spdlog::debug("Rendering {} game objects", gameObjects.size());
+	camera.Update();
 
 	for (auto& gameObject : gameObjects) {
 		MeshReference* meshReference = gameObject->meshReference;
@@ -87,6 +95,13 @@ void Scene::Render() {
 			spdlog::error("GameObject has no mesh reference");
 			continue;
 		}
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-gameObject->transform.position, 0.0f));
+		model = glm::rotate(model, glm::radians(gameObject->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(gameObject->transform.scale, 1.0f));
+
+		shader.set("u_model", model);
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, meshReference->indexCount, GL_UNSIGNED_INT, 0, meshReference->baseVertex);
 	}

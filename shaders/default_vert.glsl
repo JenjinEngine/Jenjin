@@ -7,8 +7,11 @@ layout(location = 2) in vec2 texCoord;
 out vec3 j_fragColor;
 out vec2 j_fragTexCoord;
 
+uniform mat4 u_viewProjection;
+uniform mat4 u_model;
+
 void main() {
-	gl_Position = vec4(position, 2.0);
+	gl_Position = u_viewProjection * u_model * vec4(position, 1.0);
 
 	j_fragColor = color;
 	j_fragTexCoord = texCoord;

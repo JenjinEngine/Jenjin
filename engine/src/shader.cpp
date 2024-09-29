@@ -1,13 +1,12 @@
 #include "jenjin/shader.h"
 
-#include <cstdlib>
-#include <filesystem>
 #include <spdlog/spdlog.h>
-
 #include <glm/gtc/type_ptr.hpp>
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 
 using namespace Jenjin;
 

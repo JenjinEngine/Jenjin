@@ -17,8 +17,12 @@ public:
 
 	GLFWwindow* glfwContext;
 
+	Scene* GetCurrentScene() { return currentScene; }
+
 private:
 	std::vector<std::shared_ptr<Scene>> scenes = {};
 	Scene* currentScene = nullptr;
 };
+
+extern Engine* EngineRef;
 }

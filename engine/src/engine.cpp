@@ -1,15 +1,18 @@
-#include <spdlog/spdlog.h>
+#include "jenjin/engine.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-#include "jenjin/engine.h"
+#include <spdlog/spdlog.h>
 
 using namespace Jenjin;
 
 const char* VERSION = "0.0.1";
 
+Engine* Jenjin::EngineRef = nullptr;
+
 Engine::Engine(GLFWwindow* window) {
+	EngineRef = this;
+
 	spdlog::set_level(spdlog::level::trace);
 	spdlog::debug("Initializing Jenjin {}", VERSION);
 
@@ -52,6 +55,11 @@ Engine::Engine(GLFWwindow* window) {
 			glfwSetWindowShouldClose(glfwContext, GLFW_TRUE);
 		}
 	});
+
+	glfwSetFramebufferSizeCallback(glfwContext, [](GLFWwindow* glfwContext, int width, int height) {
+		EngineRef->currentScene->GetCamera()->Resize(glm::vec2(width, height));
+		glViewport(0, 0, width, height);
+	});
 }
 
 void Engine::AddScene(std::shared_ptr<Scene> scene, bool defaultScene) {
@@ -64,8 +72,6 @@ void Engine::AddScene(std::shared_ptr<Scene> scene, bool defaultScene) {
 }
 
 void Engine::Render(Target* target) {
-	spdlog::trace("Engine::Render({})", (void*)target);
-
 	target->PreRender();
 
 	if (currentScene) {
