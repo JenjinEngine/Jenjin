@@ -24,17 +24,18 @@ void EditorTarget::PreRender() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	Resize(GetSize());
-	renderTexture.Bind();
-
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, width, height);
 
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	this->editor.show_all(Jenjin::EngineRef->GetCurrentScene());
+
+	renderTexture.Bind();
+
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glViewport(0, 0, width, height);
 }
 
 void EditorTarget::Render() {

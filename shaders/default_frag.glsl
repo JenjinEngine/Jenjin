@@ -1,10 +1,10 @@
 #version 460 core
 
 out vec3 FragColor;
+// in vec2 j_fragTexCoord;
 
-in vec3 j_fragColor;
-in vec2 j_fragTexCoord;
+uniform vec3 u_color;
 
 void main() {
-	FragColor = j_fragColor;
+	FragColor = u_color;
 }

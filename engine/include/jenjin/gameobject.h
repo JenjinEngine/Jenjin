@@ -46,10 +46,15 @@ public:
 	void SetScale(glm::vec2 scale) { transform.scale = scale; }
 	void SetRotation(float rotation) { transform.rotation = rotation; }
 
-	// Pointers
+	// Pointer getters
 	std::string* GetNamePointer() { return &name; }
 	glm::vec2* GetPositionPointer() { return &transform.position; }
 	glm::vec2* GetScalePointer() { return &transform.scale; }
 	float* GetRotationPointer() { return &transform.rotation; }
+
+	// Modifiers
+	void Translate(glm::vec2 translation) { transform.position += translation; }
+	void Scale(glm::vec2 scale) { transform.scale *= scale; }
+	void Rotate(float rotation) { transform.rotation += rotation; }
 };
 }

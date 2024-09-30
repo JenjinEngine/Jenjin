@@ -10,9 +10,9 @@ Come back later, sorry! Jenjin is not ready for real usage.
 - [x] Scene management/renderring
 - [x] Editor target
 - [x] Editor UI
-- [ ] Texture loading
 - [ ] Serialization/Deserialization of scenes
 - [ ] Scripting (Lua)
+- [ ] Texture loading
 - [ ] Code editor in the editor
 - [ ] Dynamic data attached to game objects at runtime
 
