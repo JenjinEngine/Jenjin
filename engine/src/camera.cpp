@@ -1,4 +1,5 @@
 #include "jenjin/camera.h"
+#include "spdlog/spdlog.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,9 +29,10 @@ void Camera::Resize(glm::vec2 size) {
 	int deltaWidth = width - ow;
 	int deltaHeight = height - oh;
 
-	if (deltaWidth != 0 && deltaHeight != 0) {
+	if (deltaWidth != 0 || deltaHeight != 0) {
 		glm::vec2 delta = glm::vec2(deltaWidth, deltaHeight);
 		position += glm::vec3(delta.x / 2, delta.y / 2, 0);
+
 		ow = width;
 		oh = height;
 	}

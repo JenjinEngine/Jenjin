@@ -1,8 +1,9 @@
+#include "jenjin/targets/default.h"
+#include "jenjin/targets/editor.h"
+
 #include "jenjin/helpers.h"
 #include "jenjin/engine.h"
 #include "jenjin/scene.h"
-
-#include "mydisplay.h"
 
 #include <spdlog/spdlog.h>
 
@@ -12,7 +13,8 @@ int main(void) {
 	Jenjin::Helpers::InitiateImGui(window);
 
 	Jenjin::Engine engine(window);
-	MyDisplay myDisplay;
+	/* Jenjin::Targets::DefaultTarget myTarget; */
+	Jenjin::Targets::EditorTarget myTarget;
 
 	auto scene = std::make_shared<Jenjin::Scene>();
 
@@ -28,12 +30,12 @@ int main(void) {
 
 	scene->Build();
 
-	scene->SetTarget(&myDisplay);
+	scene->SetTarget(&myTarget);
 
 	engine.AddScene(scene, true);
 
 	while (!glfwWindowShouldClose(window)) {
-		engine.Render(&myDisplay);
+		engine.Render(&myTarget);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

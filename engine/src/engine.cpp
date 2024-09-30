@@ -1,4 +1,5 @@
 #include "jenjin/engine.h"
+#include "jenjin/editor/state.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -9,6 +10,8 @@ using namespace Jenjin;
 const char* VERSION = "0.0.1";
 
 Engine* Jenjin::EngineRef = nullptr;
+
+Jenjin::Editor::State_t Jenjin::Editor::State;
 
 Engine::Engine(GLFWwindow* window) {
 	EngineRef = this;
@@ -49,16 +52,11 @@ Engine::Engine(GLFWwindow* window) {
 
 	spdlog::debug("Vendor: {}", (const char*)glGetString(GL_VENDOR));
 
-	// Set escape key to close glfwContext
-	glfwSetKeyCallback(glfwContext, [](GLFWwindow* glfwContext, int key, int scancode, int action, int mods) {
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-			glfwSetWindowShouldClose(glfwContext, GLFW_TRUE);
-		}
-	});
-
 	glfwSetFramebufferSizeCallback(glfwContext, [](GLFWwindow* glfwContext, int width, int height) {
-		EngineRef->currentScene->GetCamera()->Resize(glm::vec2(width, height));
-		glViewport(0, 0, width, height);
+		Target* target = EngineRef->GetCurrentScene()->GetTarget();
+		if (target->RespondsToWindowResize()) {
+			target->Resize(glm::vec2(width, height));
+		}
 	});
 }
 

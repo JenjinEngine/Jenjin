@@ -7,10 +7,11 @@ Come back later, sorry! Jenjin is not ready for real usage.
 
 ## TODO
 - [x] Basic architecture
-- [ ] Scene management/renderring
+- [x] Scene management/renderring
+- [x] Editor target
+- [ ] Editor UI
 - [ ] Texture loading
 - [ ] Serialization/Deserialization of scenes
-- [ ] Editor target with UI
 - [ ] Scripting (Lua)
 - [ ] Code editor in the editor
 - [ ] Dynamic data attached to game objects at runtime

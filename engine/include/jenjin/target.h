@@ -19,5 +19,7 @@ public:
 	virtual void Resize(glm::vec2 size) {}; // Resize the target
 
 	virtual glm::vec2 GetMousePosition() { return glm::vec2(-1, -1); }; // Get the mouse position
+
+	virtual bool RespondsToWindowResize() { return true; }; // Does the target respond to events of the window resizing
 };
 }

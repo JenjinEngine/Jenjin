@@ -28,8 +28,8 @@ public:
 	void Render();
 
 	Camera* GetCamera() { return &camera; }
-
 	std::vector<std::shared_ptr<GameObject>>* GetGameObjects() { return &gameObjects; }
+	Target* GetTarget() { return target; }
 
 private:
 	GLuint vao, vbo, ebo = 0;

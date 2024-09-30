@@ -1,10 +1,13 @@
 #pragma once
 
 #include "jenjin/target.h"
+#include "jenjin/framebuffer.h"
 
-class MyDisplay : public Jenjin::Target {
+namespace Jenjin {
+namespace Targets {
+class EditorTarget : public Jenjin::Target {
 public:
-	MyDisplay() = default;
+	EditorTarget();
 
 	virtual void PreRender() override;
 	virtual void Render() override;
@@ -14,4 +17,11 @@ public:
 	virtual void Resize(glm::vec2 size) override;
 
 	virtual glm::vec2 GetMousePosition() override;
+
+	virtual bool RespondsToWindowResize() override;
+
+	Jenjin::Framebuffer renderTexture;
+	int width, height;
 };
+}
+}
