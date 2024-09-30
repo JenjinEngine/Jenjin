@@ -98,7 +98,7 @@ void Scene::Render() {
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-gameObject->transform.position, 0.0f));
-		model = glm::rotate(model, glm::radians(gameObject->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(-gameObject->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(gameObject->transform.scale, 1.0f));
 
 		shader.set("u_model", model);

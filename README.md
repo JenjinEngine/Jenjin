@@ -9,7 +9,7 @@ Come back later, sorry! Jenjin is not ready for real usage.
 - [x] Basic architecture
 - [x] Scene management/renderring
 - [x] Editor target
-- [ ] Editor UI
+- [x] Editor UI
 - [ ] Texture loading
 - [ ] Serialization/Deserialization of scenes
 - [ ] Scripting (Lua)

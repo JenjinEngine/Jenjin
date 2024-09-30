@@ -23,28 +23,27 @@ void EditorTarget::PreRender() {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-
 	Resize(GetSize());
 	renderTexture.Bind();
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width, height);
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	this->editor.show_all(Jenjin::EngineRef->GetCurrentScene());
 }
 
 void EditorTarget::Render() {
 	renderTexture.Unbind();
 
-	ImGui::Begin("Controls");
+	if (this->editor.paths.openScenePath.empty()) {
+		return;
+	}
 
-	ImGui::InputFloat2("Cam pos", glm::value_ptr(*Jenjin::EngineRef->GetCurrentScene()->GetCamera()->GetPositionPointer()));
-
-	ImGui::End();
-
-	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Viewport");
 
 	ImVec2 size = ImGui::GetContentRegionAvail();

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "jenjin/target.h"
+#include "jenjin/editor/editor.h"
 #include "jenjin/framebuffer.h"
+#include "jenjin/target.h"
 
 namespace Jenjin {
 namespace Targets {
@@ -22,6 +23,8 @@ public:
 
 	Jenjin::Framebuffer renderTexture;
 	int width, height;
+
+	Jenjin::Editor::Manager editor;
 };
 }
 }
