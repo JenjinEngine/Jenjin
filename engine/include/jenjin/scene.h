@@ -5,6 +5,7 @@
 #include "jenjin/shader.h"
 #include "jenjin/target.h"
 
+#include <fstream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -30,6 +31,11 @@ public:
 	Camera* GetCamera() { return &camera; }
 	std::vector<std::shared_ptr<GameObject>>* GetGameObjects() { return &gameObjects; }
 	Target* GetTarget() { return target; }
+
+	void Save(std::string path);
+	void Save(std::ofstream& file);
+	void Load(std::string path);
+	void Load(std::ifstream& file);
 
 private:
 	GLuint vao, vbo, ebo = 0;

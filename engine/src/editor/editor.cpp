@@ -31,13 +31,12 @@ void Manager::menu() {
 				}
 
 				if (ImGui::MenuItem("Open Scene")) {
-					std::ifstream file(this->paths.openScenePath);
-					spdlog::warn("Unimplemented: Open Scene");
+					/* std::ifstream file(this->paths.openScenePath); */
+					Jenjin::EngineRef->GetCurrentScene()->Load(this->paths.openScenePath);
 				}
 
 				if (ImGui::MenuItem("Save Scene")) {
-					std::ofstream file(this->paths.openScenePath);
-					spdlog::warn("Unimplemented: Save Scene");
+					Jenjin::EngineRef->GetCurrentScene()->Save(this->paths.openScenePath);
 				}
 			}
 
@@ -398,8 +397,7 @@ void Manager::backup_prompts(Jenjin::Scene* scene) {
 		ImGui::Separator();
 
 		if (ImGui::Button("Save and Exit")) {
-			std::ofstream file(this->paths.openScenePath);
-			spdlog::warn("Unimplemented: Save Scene");
+			Jenjin::EngineRef->GetCurrentScene()->Save(this->paths.openScenePath);
 			glfwSetWindowShouldClose(glfwGetCurrentContext(), GLFW_TRUE);
 		}
 
@@ -458,7 +456,7 @@ void Manager::welcome() {
 		Jenjin::EngineRef->GetCurrentScene()->GetGameObjects()->clear();
 		std::ifstream ifile(this->paths.openScenePath);
 		/* Jenjin::EngineRef->GetCurrentScene()->load(ifile); */
-		spdlog::warn("Unimplemented: Load Scene");
+		Jenjin::EngineRef->GetCurrentScene()->Load(this->paths.openScenePath);
 
 		// Load all the lua files
 		spdlog::warn("Unimplemented: Load Lua files");
@@ -523,9 +521,7 @@ void Manager::welcome() {
 			this->paths.openScenePath = projectPath + "/main.jenscene";
 			this->paths.liveScenePath = projectPath + "/live.jenscene";
 			Jenjin::EngineRef->GetCurrentScene()->GetGameObjects()->clear();
-			/* std::ofstream ofile(this->paths.openScenePath); */
-			/* Jenjin::Engine->active_scene->save(ofile); */
-			spdlog::warn("Unimplemented: Save Scene");
+			Jenjin::EngineRef->GetCurrentScene()->Save(this->paths.openScenePath);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();

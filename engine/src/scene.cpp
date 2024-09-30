@@ -1,4 +1,5 @@
 #include "jenjin/scene.h"
+#include "jenjin/helpers.h"
 #include "jenjin/mesh.h"
 
 #include <glm/ext/matrix_transform.hpp>
@@ -6,6 +7,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <fstream>
+#include <iostream>
 #include <algorithm>
 
 using namespace Jenjin;
@@ -104,4 +107,61 @@ void Scene::Render() {
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, meshReference->indexCount, GL_UNSIGNED_INT, 0, meshReference->baseVertex);
 	}
+}
+
+void Scene::Save(std::string path) {
+	std::ofstream file(path, std::ios::binary);
+	Save(file);
+}
+
+void Scene::Save(std::ofstream& file) {
+	if (this->gameObjects.empty()) {
+		spdlog::debug("No game objects to save");
+		return;
+	}
+
+	for (auto& go : this->gameObjects) {
+		file.write(go->name.c_str(), 64);
+		file.write((char*)&go->transform.position, 2 * sizeof(float));
+		file.write((char*)&go->transform.scale, 2 * sizeof(float));
+		file.write((char*)&go->transform.rotation, sizeof(float));
+		file.write((char*)&go->color, 3 * sizeof(float));
+	}
+}
+
+void Scene::Load(std::string path) {
+	std::ifstream file(path, std::ios::binary);
+	this->Load(file);
+}
+
+void Scene::Load(std::ifstream& file) {
+	this->gameObjects.clear();
+
+	int begin = file.tellg();
+	file.seekg(0, std::ios::end);
+	int end = file.tellg();
+
+	if (end - begin <= 1) {
+		spdlog::debug("File is empty");
+		return;
+	}
+
+	int gobj_count = (end - begin) / 96;
+	int gobjs = 0;
+
+	file.seekg(0, std::ios::beg);
+
+	for (int i = 0; i < gobj_count; i++) {
+		char name[64]; file.read(name, 64);
+		auto go = std::make_shared<GameObject>(name, Jenjin::Helpers::CreateQuad(2.0f, 2.0f));
+
+		file.read((char*)&go->transform.position, 2 * sizeof(float));
+		file.read((char*)&go->transform.scale, 2 * sizeof(float));
+		file.read((char*)&go->transform.rotation, sizeof(float));
+		file.read((char*)&go->color, 3 * sizeof(float));
+
+		this->AddGameObject(go);
+	}
+
+	this->Build();
 }
