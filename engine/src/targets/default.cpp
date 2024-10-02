@@ -11,7 +11,7 @@ void DefaultTarget::PreRender() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	static int i = 0; if (i < 5) { i++;
-		Jenjin::EngineRef->GetCurrentScene()->GetCamera()->SetPosition(glm::vec3(GetSize().x / 2, GetSize().y / 2, 0));
+		Jenjin::EngineRef->GetCurrentScene()->GetCamera()->SetPosition(glm::vec3(0, 0, 0));
 	}
 }
 

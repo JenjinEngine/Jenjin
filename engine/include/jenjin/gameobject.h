@@ -24,9 +24,14 @@ public:
 	// Appearance
 	glm::vec3 color = glm::vec3(1.0f);
 
-	// Mesh used to render in `Scene::render()`
+
 	Mesh mesh;
-	MeshReference* meshReference = nullptr;
+	std::string texturePath = "";
+
+	int meshReferenceID = -1;
+	int textureID = -1;
+
+	bool mixColor = false;
 
 	// TODO: hierarchy
 #ifdef false

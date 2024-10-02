@@ -18,6 +18,8 @@ Scene::Scene() {
 }
 
 void Scene::SetTarget(Target* target) {
+	spdlog::trace("Scene::SetTarget({})", (void*)target);
+
 	this->target = target;
 	this->camera.Resize(target->GetSize());
 }
@@ -27,7 +29,27 @@ void Scene::AddGameObject(std::shared_ptr<GameObject> gameObject) {
 }
 
 void Scene::RemoveGameObject(std::shared_ptr<GameObject> gameObject) {
-	gameObjects.erase(std::remove(gameObjects.begin(), gameObjects.end(), gameObject), gameObjects.end());
+	this->RemoveGameObject(gameObject.get());
+}
+void Scene::RemoveGameObject(GameObject* gameObject) {
+	gameObjects.erase(std::remove_if(gameObjects.begin(), gameObjects.end(), [gameObject](std::shared_ptr<GameObject> go) {
+		return go.get() == gameObject;
+	}), gameObjects.end());
+}
+
+void Scene::SetGameObjectTexture(GameObject* gameObject, const std::string& texturePath) {
+	if (this->textures.find(texturePath) == this->textures.end()) {
+		auto alpha = texturePath.find(".png") != std::string::npos;
+		this->textures[texturePath] = std::make_shared<Texture>(texturePath.c_str(), alpha);
+	}
+
+	int index = std::distance(this->textures.begin(), this->textures.find(texturePath));
+	gameObject->texturePath = texturePath;
+	gameObject->textureID = index;
+}
+
+void Scene::SetGameObjectTexture(std::shared_ptr<GameObject> gameObject, const std::string& texturePath) {
+	SetGameObjectTexture(gameObject.get(), texturePath);
 }
 
 void Scene::Build() {
@@ -53,7 +75,7 @@ void Scene::Build() {
 		vertices.insert(vertices.end(), meshVertices.begin(), meshVertices.end());
 		indices.insert(indices.end(), meshIndices.begin(), meshIndices.end());
 
-		gameObject->meshReference = &this->meshReferences.back();
+		gameObject->meshReferenceID = this->meshReferences.size() - 1;
 	}
 
 	spdlog::debug("Built {} mesh references... now generating buffers", this->meshReferences.size());
@@ -85,36 +107,49 @@ void Scene::Update() {
 void Scene::Render() {
 	this->shader.use();
 	this->camera.Use();
+	this->camera.Update();
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, ebo);
 
-	camera.Update();
-
 	for (auto& gameObject : gameObjects) {
-		MeshReference* meshReference = gameObject->meshReference;
-		if (!meshReference) {
+		if (gameObject->meshReferenceID == -1) {
 			spdlog::error("GameObject has no mesh reference");
 			continue;
 		}
 
+		MeshReference* meshReference = &this->meshReferences[gameObject->meshReferenceID];
+
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-gameObject->transform.position, 0.0f));
+		model = glm::translate(model, glm::vec3(gameObject->transform.position, 0.0f));
 		model = glm::rotate(model, glm::radians(-gameObject->transform.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(gameObject->transform.scale, 1.0f));
 
 		shader.set("u_model", model);
 		shader.set("u_color", gameObject->color);
 
+		if (gameObject->textureID != -1) {
+			this->textures[gameObject->texturePath]->bind(0);
+			shader.set("u_texture", 0);
+		}
+
+		bool hasTexture = gameObject->textureID != -1;
+		shader.set("u_hasTexture", hasTexture);
+		shader.set("u_mixColor", gameObject->mixColor && hasTexture);
+
 		glDrawElementsBaseVertex(GL_TRIANGLES, meshReference->indexCount, GL_UNSIGNED_INT, 0, meshReference->baseVertex);
 	}
 }
 
-void Scene::Save(std::string path) {
+void Scene::Save(const std::string& path) {
+	spdlog::trace("Scene::Save({})", path);
+
 	std::ofstream file(path, std::ios::binary);
 	Save(file);
 }
 
 void Scene::Save(std::ofstream& file) {
+	spdlog::trace("Scene::Save({})", (void*)&file);
+
 	if (this->gameObjects.empty()) {
 		spdlog::debug("No game objects to save");
 		return;
@@ -129,12 +164,16 @@ void Scene::Save(std::ofstream& file) {
 	}
 }
 
-void Scene::Load(std::string path) {
+void Scene::Load(const std::string& path) {
+	spdlog::trace("Scene::Load({})", path);
+
 	std::ifstream file(path, std::ios::binary);
 	this->Load(file);
 }
 
 void Scene::Load(std::ifstream& file) {
+	spdlog::trace("Scene::Load({})", (void*)&file);
+
 	this->gameObjects.clear();
 
 	int begin = file.tellg();

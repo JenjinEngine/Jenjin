@@ -1,48 +1,34 @@
 #include "jenjin/camera.h"
-#include "spdlog/spdlog.h"
+#include "glm/trigonometric.hpp"
+
+#include <spdlog/spdlog.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace Jenjin;
 
-Camera::Camera(Shader* shader, glm::vec2 size) : shader(shader), aspectRatio((float)size.x / (float)size.y) {
+Camera::Camera(Shader* shader, glm::vec2 size) : shader(shader) {
 	float& width = size.x; float& height = size.y;
 
-	// Set the camera's position to the center of the screen
-	position = glm::vec3(width / 2, height / 2, 0);
 	rotation = 0;
-	zoom = 100;
+	zoom = 1;
+
+	position = glm::vec3(0, 0, 0);
 
 	// Set the camera's projection matrix
 	Resize(size);
 }
 
 void Camera::Resize(glm::vec2 size) {
-	if (ow == 0 && oh == 0) {
-		ow = size.x;
-		oh = size.y;
-	}
-
-	float& width = size.x; float& height = size.y;
-
-	int deltaWidth = width - ow;
-	int deltaHeight = height - oh;
-
-	if (deltaWidth != 0 || deltaHeight != 0) {
-		glm::vec2 delta = glm::vec2(deltaWidth, deltaHeight);
-		position += glm::vec3(delta.x / 2, delta.y / 2, 0);
-
-		ow = width;
-		oh = height;
-	}
-
-	aspectRatio = (float)width / (float)height;
-	projection = glm::ortho((float)width, 0.0f, (float)height, 0.0f, -1.0f, 1.0f);
+    float aspectRatio = size.x / size.y;
+    float inverseZoom = 1.0f / (zoom / 10); // Invert to make zoom zoom in and also scale everything down...
+    this->projection = glm::ortho(-aspectRatio * inverseZoom, aspectRatio * inverseZoom, -inverseZoom, inverseZoom, -1.0f, 1.0f);
 }
 
 void Camera::Update() {
-	view = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.0f), glm::vec3(zoom));
+	// include rotation
+	view = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 0, 1));
 }
 
 void Camera::SetPosition(const glm::vec3& position) {

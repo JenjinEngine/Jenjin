@@ -42,11 +42,7 @@ private:
 	float rotation;
 	float zoom;
 
-	float aspectRatio;
-
 	glm::mat4 projection;
 	glm::mat4 view;
-
-	int ow, oh;
 };
 }

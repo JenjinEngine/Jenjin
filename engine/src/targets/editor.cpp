@@ -17,7 +17,7 @@ EditorTarget::EditorTarget() {
 
 void EditorTarget::PreRender() {
 	static int i = 0; if (i < 5) { i++;
-		Jenjin::EngineRef->GetCurrentScene()->GetCamera()->SetPosition(glm::vec3(width / 2, height / 2, 0));
+		Jenjin::EngineRef->GetCurrentScene()->GetCamera()->SetPosition(glm::vec3(0, 0, 0));
 	}
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);

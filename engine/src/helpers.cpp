@@ -40,7 +40,22 @@ void InitiateImGui(GLFWwindow* window) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+	io.Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Medium.ttf", 16.0f);
 	ImGui::StyleColorsDark();
+
+	// Style to red
+	ImGuiStyle& style = ImGui::GetStyle();
+	for (int i = 0; i < ImGuiCol_COUNT; i++) {
+		static ImVec4* colors = style.Colors;
+		float h, s, v; ImGui::ColorConvertRGBtoHSV(colors[i].x, colors[i].y, colors[i].z, h, s, v);
+		h = 0; // red
+		float r, g, b; ImGui::ColorConvertHSVtoRGB(h, s, v, r, g, b);
+		colors[i] = ImVec4(r, g, b, colors[i].w);
+	}
+
+	// Light rounded corners
+	style.FrameRounding = 2.0f;
+	style.PopupRounding = 2.0f;
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 460");

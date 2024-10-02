@@ -10,6 +10,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <memory>
 #include <spdlog/spdlog.h>
 
 #include <filesystem>
@@ -288,6 +289,32 @@ void Manager::inspector(Jenjin::Scene* scene) {
 	ImGui::ColorEdit3("Color", glm::value_ptr(selectedObject->color));
 	ImGui::Unindent();
 
+	ImGui::Text("Textures");
+	ImGui::Separator();
+	ImGui::Indent();
+	ImGui::Spacing();
+	auto diriter = std::filesystem::directory_iterator(this->paths.projectPath + "/textures/");
+
+	if (diriter == std::filesystem::directory_iterator()) {
+		ImGui::Text("No textures found");
+	}
+
+	for (auto& texture : diriter) {
+		if (texture.is_regular_file() && texture.path().extension() == ".png" || texture.path().extension() == ".jpg") {
+			bool isSelected = selectedObject->texturePath == texture.path().string();
+			if (ImGui::Selectable(texture.path().filename().string().c_str(), isSelected)) {
+				scene->SetGameObjectTexture(selectedObject, texture.path().string());
+			}
+		}
+	}
+
+	if (!selectedObject->texturePath.empty()) {
+		ImGui::Spacing();
+		ImGui::Checkbox("Mix Color", &selectedObject->mixColor);
+	}
+
+	ImGui::Unindent();
+
 	ImGui::Spacing();
 
 	ImGui::Text("Manage");
@@ -302,7 +329,7 @@ void Manager::inspector(Jenjin::Scene* scene) {
 	}
 
 	if (ImGui::Button("Delete")) {
-		scene->RemoveGameObject(std::shared_ptr<Jenjin::GameObject>(selectedObject));
+		scene->RemoveGameObject(selectedObject);
 		selectedObject = nullptr;
 	}
 

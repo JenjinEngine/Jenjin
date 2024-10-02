@@ -20,6 +20,8 @@ std::string Jenjin::Editor::get_jendir() {
 	jendir = std::getenv("USERPROFILE") + std::string("\\Documents\\Jenjin");
 #elif __APPLE__ || __linux__
 	jendir = std::getenv("HOME") + std::string("/Documents/Jenjin");
+#else
+	jendir = "Jendir";
 #endif
 
 	return jendir;

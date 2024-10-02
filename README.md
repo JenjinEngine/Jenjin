@@ -11,10 +11,13 @@ Come back later, sorry! Jenjin is not ready for real usage.
 - [x] Editor target
 - [x] Editor UI
 - [x] Serialization/Deserialization of scenes
-- [ ] Texture loading
+- [x] Texture loading
+- [x] Editor styling
+- [ ] File explorer
 - [ ] Scripting (Lua)
 - [ ] Code editor in the editor
 - [ ] Dynamic data attached to game objects at runtime
+- [ ] Hierarchy and `.Parent` in Lua along with `workspace` (e.g. `Workspace.MyGameObject.Parent` == `Workspace`)
 
 ## TODO (Future)
 - [ ] Scripting (Python)
