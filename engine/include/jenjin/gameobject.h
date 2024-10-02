@@ -2,6 +2,7 @@
 
 #include "jenjin/mesh.h"
 
+#include <spdlog/spdlog.h>
 #include <glm/glm.hpp>
 
 #include <string>
@@ -10,7 +11,7 @@ namespace Jenjin {
 class GameObject {
 public:
 	GameObject(std::string name, Mesh mesh) : mesh(mesh), name(name) {}
-	~GameObject() = default;
+	~GameObject() { spdlog::trace("GameObject::~GameObject(\"{}\")", name); }
 
 	std::string name;
 

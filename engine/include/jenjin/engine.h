@@ -10,6 +10,7 @@ namespace Jenjin {
 class Engine {
 public:
 	Engine(GLFWwindow* window);
+	~Engine();
 
 	void AddScene(std::shared_ptr<Scene> scene, bool defaultScene = false);
 

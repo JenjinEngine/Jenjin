@@ -60,6 +60,10 @@ Engine::Engine(GLFWwindow* window) {
 	});
 }
 
+Engine::~Engine() {
+	spdlog::trace("Engine::~Engine()");
+}
+
 void Engine::AddScene(std::shared_ptr<Scene> scene, bool defaultScene) {
 	spdlog::trace("Engine::AddScene({}, {})", (void*)scene.get(), defaultScene);
 	scenes.emplace_back(scene);

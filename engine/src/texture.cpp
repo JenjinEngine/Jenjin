@@ -43,8 +43,7 @@ Texture::Texture(const char* imagePath, bool alpha) {
 }
 
 Texture::~Texture() {
-	spdlog::trace("Texture::~Texture()");
-	spdlog::debug("Deleting texture: {}", this->imagePath);
+	spdlog::trace("Texture::~Texture(\"{}\")", imagePath);
 	glDeleteTextures(1, &ID);
 }
 

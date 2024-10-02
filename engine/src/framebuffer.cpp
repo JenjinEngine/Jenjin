@@ -35,6 +35,8 @@ Framebuffer::Framebuffer() {
 }
 
 Framebuffer::~Framebuffer() {
+	spdlog::trace("Framebuffer::~Framebuffer()");
+
 	glDeleteFramebuffers(1, &fbo);
 	glDeleteTextures(1, &texture);
 	glDeleteRenderbuffers(1, &rbo);

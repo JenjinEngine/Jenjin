@@ -6,10 +6,11 @@
 #include "jenjin/target.h"
 #include "jenjin/texture.h"
 
-#include <fstream>
+#include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <fstream>
 #include <memory>
 #include <vector>
 
@@ -17,7 +18,7 @@ namespace Jenjin {
 class Scene {
 public:
 	Scene();
-	~Scene() = default;
+	~Scene() { spdlog::trace("Scene::~Scene()"); }
 
 	void SetTarget(Target* target);
 
