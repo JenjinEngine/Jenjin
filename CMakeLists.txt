@@ -12,4 +12,4 @@ project(Jenjin)
 
 add_subdirectory(vendor)
 add_subdirectory(engine)
-add_subdirectory(test)
+add_subdirectory(jenjin)
