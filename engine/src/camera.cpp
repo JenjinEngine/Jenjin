@@ -28,7 +28,7 @@ void Camera::Resize(glm::vec2 size) {
 
 void Camera::Update() {
 	// include rotation
-	view = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 0, 1));
+	view = glm::translate(glm::mat4(1.0f), -position) * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 0, 1));
 }
 
 void Camera::SetPosition(const glm::vec3& position) {
