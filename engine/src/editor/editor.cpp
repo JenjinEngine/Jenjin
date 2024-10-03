@@ -1,20 +1,20 @@
 #include "jenjin/editor/editor.h"
 #include "jenjin/editor/utils.h"
-#include "jenjin/engine.h"
 #include "jenjin/gameobject.h"
 #include "jenjin/helpers.h"
+#include "jenjin/engine.h"
 #include "jenjin/scene.h"
+
+#include <glm/gtc/type_ptr.hpp>
+#include <spdlog/spdlog.h>
+#include <GLFW/glfw3.h>
 
 #include <imgui_internal.h>
 #include <imgui.h>
 
-#include <GLFW/glfw3.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <memory>
-#include <spdlog/spdlog.h>
-
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -59,7 +59,7 @@ void Manager::menu() {
 
 			if (ImGui::BeginMenu("Game")) {
 				if (ImGui::MenuItem("Play")) {
-						spdlog::warn("Unimplemented: Play");
+					spdlog::warn("Unimplemented: Play");
 				}
 
 				ImGui::EndMenu();
@@ -113,27 +113,15 @@ void Manager::dockspace() {
 		// Dock the welcome window in the center
 		ImGui::DockBuilderDockWindow("Welcome", dockspace_id);
 
-		// Split into thirds (horizontally, so we can have a left, middle, and right)
-		// |     1     |
-		// |-----------|
-		// | 2 | 3 | 4 |
-		// |	 |   |   |
-		// |	 |   |   |
-		// |-----------|
-		// |     5 	   |
-		auto dock_id_down = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Down, 0.2f, nullptr, &dockspace_id);
-		auto dock_id_left = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.2f, nullptr, &dockspace_id);
-		auto dock_id_right = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.6f, nullptr, &dockspace_id);
-		auto dock_id_middle = dockspace_id;
+		auto dock_left = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.25f, nullptr, &dockspace_id);
+		auto dock_left_up = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.8f, nullptr, &dock_left);
+		auto dock_right = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.4f, nullptr, &dockspace_id);
+		auto middle = dockspace_id;
 
-		ImGui::DockBuilderDockWindow("Explorer", dock_id_down);
-		ImGui::DockBuilderDockWindow("Hierarchy", dock_id_left);
-		ImGui::DockBuilderDockWindow("Inspector", dock_id_right);
-
-		// Put viewport and scene in the same dockspace
-		ImGui::DockBuilderDockWindow("Viewport", dock_id_middle);
-		ImGui::DockBuilderDockWindow("Scene", dock_id_middle);
-		ImGui::DockBuilderDockWindow("Code", dock_id_middle);
+		ImGui::DockBuilderDockWindow("Hierarchy", dock_left_up);
+		ImGui::DockBuilderDockWindow("Explorer", dock_left);
+		ImGui::DockBuilderDockWindow("Inspector", dock_right);
+		ImGui::DockBuilderDockWindow("Viewport", middle);
 
 		ImGui::DockBuilderFinish(dockspace_id);
 	}
@@ -342,26 +330,15 @@ void Manager::inspector(Jenjin::Scene* scene) {
 void Manager::explorer(Jenjin::Scene* scene) {
 	ImGui::Begin("Explorer");
 
-	// context menu with new popup (builtinto menu that asks for name of file)
-	if (ImGui::BeginPopupContextWindow()) {
-		if (ImGui::BeginMenu("New")) {
-			static char name[128] = {0};
-			ImGui::InputText("Name", name, sizeof(name));
-			if (ImGui::Button("Create")) {
-				std::ofstream file(this->paths.projectPath + "/scripts/" + std::string(name));
-				file << "function ready()\n	print(\"Ready!\")\nend\n\nfunction update()\n 	print(\"Update\")\nend\n";
-				file.close();
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndPopup();
-	}
-
-	for (auto file : std::filesystem::directory_iterator(this->paths.projectPath + "/scripts/")) {
-		if (file.is_regular_file()) {
-			if (ImGui::Selectable(file.path().filename().string().c_str())) {
+	for (auto file : std::filesystem::directory_iterator(this->paths.projectPath)) {
+		if (file.is_directory()) {
+			if (ImGui::TreeNode(file.path().filename().string().c_str())) {
+				for (auto subfile : std::filesystem::directory_iterator(file.path())) {
+					if (subfile.is_regular_file()) {
+						ImGui::Selectable(fmt::format("{}", subfile.path().filename().string()).c_str());
+					}
+				}
+				ImGui::TreePop();
 			}
 		}
 	}
@@ -371,7 +348,20 @@ void Manager::explorer(Jenjin::Scene* scene) {
 	static bool demo_tools; ImGui::Checkbox("Demo Tools", &demo_tools); if (demo_tools) ImGui::ShowDemoWindow(&demo_tools);
 	static bool jenjin_demo; ImGui::Checkbox("Jenjin Demo", &jenjin_demo);
 
-	if (jenjin_demo) {
+	static float hue = 0.0f;
+	auto change_ui_hue = [](float hue) {
+		ImGuiStyle& style = ImGui::GetStyle();
+		for (int i = 0; i < ImGuiCol_COUNT; i++) {
+			static ImVec4* colors = style.Colors;
+			float h, s, v; ImGui::ColorConvertRGBtoHSV(colors[i].x, colors[i].y, colors[i].z, h, s, v);
+			float r, g, b; ImGui::ColorConvertHSVtoRGB(hue, s, v, r, g, b);
+			colors[i] = ImVec4(r, g, b, colors[i].w);
+		}
+	};
+	hue = fmodf(hue + 0.0012f, 1.0f);
+	change_ui_hue(hue);
+
+	/*if (jenjin_demo) {
 		static float hue = 0.0f;
 
 		auto change_ui_hue = [](float hue) {
@@ -400,12 +390,10 @@ void Manager::explorer(Jenjin::Scene* scene) {
 			change_ui_hue(hue);
 		}
 
-		static bool rainbow; ImGui::Checkbox("Rainbow", &rainbow);
-		if (rainbow) {
-			hue = fmodf(hue + 0.006f, 1.0f);
-			change_ui_hue(hue);
-		}
-	}
+		/* static bool rainbow; ImGui::Checkbox("Rainbow", &rainbow); */
+	/* if (rainbow) { */
+	/* }
+	}*/
 
 	ImGui::End();
 }
@@ -462,6 +450,7 @@ void Manager::show_all(Jenjin::Scene* scene) {
 	hierarchy(scene);
 	inspector(scene);
 	backup_prompts(scene);
+	explorer(scene);
 }
 
 void Manager::welcome() {
