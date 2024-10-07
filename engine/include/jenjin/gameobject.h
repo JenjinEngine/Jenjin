@@ -25,12 +25,10 @@ public:
 	// Appearance
 	glm::vec3 color = glm::vec3(1.0f);
 
-
 	Mesh mesh;
 	std::string texturePath = "";
 
 	int meshReferenceID = -1;
-	int textureID = -1;
 
 	bool mixColor = false;
 

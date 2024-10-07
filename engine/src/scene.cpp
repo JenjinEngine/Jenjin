@@ -1,4 +1,5 @@
 #include "jenjin/scene.h"
+#include "jenjin/gameobject.h"
 #include "jenjin/helpers.h"
 #include "jenjin/mesh.h"
 
@@ -43,9 +44,7 @@ void Scene::SetGameObjectTexture(GameObject* gameObject, const std::string& text
 		this->textures[texturePath] = std::make_shared<Texture>(texturePath.c_str(), alpha);
 	}
 
-	int index = std::distance(this->textures.begin(), this->textures.find(texturePath));
 	gameObject->texturePath = texturePath;
-	gameObject->textureID = index;
 }
 
 void Scene::SetGameObjectTexture(std::shared_ptr<GameObject> gameObject, const std::string& texturePath) {
@@ -127,18 +126,26 @@ void Scene::Render() {
 		shader.set("u_model", model);
 		shader.set("u_color", gameObject->color);
 
-		if (gameObject->textureID != -1) {
+		if (!gameObject->texturePath.empty()) {
 			this->textures[gameObject->texturePath]->bind(0);
 			shader.set("u_texture", 0);
 		}
 
-		bool hasTexture = gameObject->textureID != -1;
+		bool hasTexture = !gameObject->texturePath.empty();
 		shader.set("u_hasTexture", hasTexture);
 		shader.set("u_mixColor", gameObject->mixColor && hasTexture);
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, meshReference->indexCount, GL_UNSIGNED_INT, 0, meshReference->baseVertex);
 	}
 }
+
+struct GOBJSAVABLE {
+	Jenjin::GameObject::Transform transform;
+	glm::vec3 color;
+
+	char texturePath[128];
+	char name[128];
+};
 
 void Scene::Save(const std::string& path) {
 	spdlog::trace("Scene::Save({})", path);
@@ -156,11 +163,20 @@ void Scene::Save(std::ofstream& file) {
 	}
 
 	for (auto& go : this->gameObjects) {
-		file.write(go->name.c_str(), 64);
-		file.write((char*)&go->transform.position, 2 * sizeof(float));
-		file.write((char*)&go->transform.scale, 2 * sizeof(float));
-		file.write((char*)&go->transform.rotation, sizeof(float));
-		file.write((char*)&go->color, 3 * sizeof(float));
+		GOBJSAVABLE gobj = {
+			.transform = go->transform,
+			.color = go->color,
+
+			.texturePath = { 0 },
+			.name = { 0 }
+		};
+
+		strncpy(gobj.name, go->name.c_str(), sizeof(gobj.name));
+		strncpy(gobj.texturePath, go->texturePath.c_str(), sizeof(gobj.texturePath));
+		gobj.name[sizeof(gobj.name) - 1] = 0;
+		gobj.texturePath[sizeof(gobj.texturePath) - 1] = 0;
+
+		file.write(reinterpret_cast<char*>(&gobj), sizeof(GOBJSAVABLE));
 	}
 }
 
@@ -176,28 +192,16 @@ void Scene::Load(std::ifstream& file) {
 
 	this->gameObjects.clear();
 
-	int begin = file.tellg();
-	file.seekg(0, std::ios::end);
-	int end = file.tellg();
+	for (GOBJSAVABLE gobj; file.read(reinterpret_cast<char*>(&gobj), sizeof(GOBJSAVABLE));) {
+		auto go = std::make_shared<GameObject>(gobj.name, Jenjin::Helpers::CreateQuad(2.0f, 2.0f));
+		go->transform = gobj.transform;
+		go->color = gobj.color;
+		go->texturePath = gobj.texturePath;
 
-	if (end - begin <= 1) {
-		spdlog::debug("File is empty");
-		return;
-	}
-
-	int gobj_count = (end - begin) / 96;
-	int gobjs = 0;
-
-	file.seekg(0, std::ios::beg);
-
-	for (int i = 0; i < gobj_count; i++) {
-		char name[64]; file.read(name, 64);
-		auto go = std::make_shared<GameObject>(name, Jenjin::Helpers::CreateQuad(2.0f, 2.0f));
-
-		file.read((char*)&go->transform.position, 2 * sizeof(float));
-		file.read((char*)&go->transform.scale, 2 * sizeof(float));
-		file.read((char*)&go->transform.rotation, sizeof(float));
-		file.read((char*)&go->color, 3 * sizeof(float));
+		// Load texture if it exists
+		if (std::strlen(go->texturePath.data()) > 0) {
+			this->SetGameObjectTexture(go, go->texturePath.data());
+		}
 
 		this->AddGameObject(go);
 	}
