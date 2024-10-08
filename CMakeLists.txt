@@ -10,6 +10,6 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 # Project declaration
 project(Jenjin)
 
-add_subdirectory(vendor)
+add_subdirectory(megasource/libs/)
 add_subdirectory(engine)
 add_subdirectory(jenjin)
