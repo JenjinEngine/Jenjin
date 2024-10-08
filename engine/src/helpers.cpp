@@ -43,7 +43,7 @@ void InitiateImGui(GLFWwindow* window) {
 	io.Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Medium.ttf", 16.0f);
 	ImGui::StyleColorsDark();
 
-	// Photoshop style by Derydoca from ImThemes (Padding values slightly adjusted)
+	// Photoshop style by Derydoca from ImThemes
 	auto Derydocas_PhotoshopTheme_FromImThemes = [](ImGuiStyle& style) {
 		style.Alpha = 1.0f;
 		style.DisabledAlpha = 0.6000000238418579f;
@@ -57,7 +57,7 @@ void InitiateImGui(GLFWwindow* window) {
 		style.ChildBorderSize = 1.0f;
 		style.PopupRounding = 2.0f;
 		style.PopupBorderSize = 1.0f;
-		style.FramePadding = ImVec2(10.0f, 8.0f);
+		style.FramePadding = ImVec2(4.0f, 3.0f);
 		style.FrameRounding = 2.0f;
 		style.FrameBorderSize = 1.0f;
 		style.ItemSpacing = ImVec2(8.0f, 4.0f);

@@ -1,5 +1,6 @@
 #include "jenjin/editor/editor.h"
 #include "jenjin/editor/utils.h"
+#include "jenjin/editor/widgets.h"
 #include "jenjin/gameobject.h"
 #include "jenjin/helpers.h"
 #include "jenjin/engine.h"
@@ -32,7 +33,6 @@ void Manager::menu() {
 				}
 
 				if (ImGui::MenuItem("Open Scene")) {
-					/* std::ifstream file(this->paths.openScenePath); */
 					Jenjin::EngineRef->GetCurrentScene()->Load(this->paths.openScenePath);
 				}
 
@@ -115,7 +115,7 @@ void Manager::dockspace() {
 
 		auto dock_left = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.25f, nullptr, &dockspace_id);
 		auto dock_left_up = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.8f, nullptr, &dock_left);
-		auto dock_right = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.4f, nullptr, &dockspace_id);
+		auto dock_right = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.6f, nullptr, &dockspace_id);
 		auto middle = dockspace_id;
 
 		ImGui::DockBuilderDockWindow("Hierarchy", dock_left_up);
@@ -249,79 +249,114 @@ void Manager::inspector(Jenjin::Scene* scene) {
 		return;
 	}
 
-	if (!(ImGui::CollapsingHeader(selectedObject->name.c_str()), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Bullet)) {
-		ImGui::End();
-		return;
+	if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Indent();
+		Jenjin::Editor::Widgets::transformWidget(&selectedObject->transform);
+		ImGui::Unindent();
 	}
 
-	ImGui::Indent();
+	ImGui::ItemSize(ImVec2(0, 10));
 
-	ImGui::Text("Transform");
-	ImGui::Separator();
-	ImGui::Indent();
-
-	ImGui::DragFloat2("Position", glm::value_ptr(selectedObject->transform.position), 0.1f);
-	ImGui::DragFloat("Rotation", &selectedObject->transform.rotation, 0.1f);
-	ImGui::DragFloat2("Scale", glm::value_ptr(selectedObject->transform.scale), 0.025f);
-
-	ImGui::Unindent();
-
-	ImGui::Text("Appearance");
-	ImGui::Separator();
-	ImGui::Indent();
-
-	ImGui::Text("Colours");
-	ImGui::Separator();
-	ImGui::Indent();
-	ImGui::Spacing();
-	ImGui::ColorEdit3("Color", glm::value_ptr(selectedObject->color));
-	ImGui::Unindent();
-
-	ImGui::Text("Textures");
-	ImGui::Separator();
-	ImGui::Indent();
-	ImGui::Spacing();
-	auto diriter = std::filesystem::directory_iterator(this->paths.projectPath + "/textures/");
-
-	if (diriter == std::filesystem::directory_iterator()) {
-		ImGui::Text("No textures found");
+	if (ImGui::CollapsingHeader("Appearance", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Indent();
+		ImGui::ColorPicker3("Color", glm::value_ptr(selectedObject->color));
+		ImGui::Unindent();
 	}
 
-	for (auto& texture : diriter) {
-		if (texture.is_regular_file() && texture.path().extension() == ".png" || texture.path().extension() == ".jpg") {
-			bool isSelected = selectedObject->texturePath == texture.path().string();
-			if (ImGui::Selectable(texture.path().filename().string().c_str(), isSelected)) {
-				scene->SetGameObjectTexture(selectedObject, texture.path().string());
+	ImGui::ItemSize(ImVec2(0, 10));
+
+	if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Indent();
+		auto diriter = std::filesystem::directory_iterator(this->paths.projectPath + "/textures/");
+		if (diriter == std::filesystem::directory_iterator()) {
+			ImGui::Text("No textures found");
+		}
+		for (auto& texture : diriter) {
+			if (texture.is_regular_file() && texture.path().extension() == ".png" || texture.path().extension() == ".jpg") {
+				bool isSelected = selectedObject->texturePath == texture.path().string();
+				if (ImGui::Selectable(texture.path().filename().string().c_str(), isSelected)) {
+					scene->SetGameObjectTexture(selectedObject, texture.path().string());
+				}
 			}
 		}
+
+		ImGui::ItemSize(ImVec2(0, 2));
+
+		if (!selectedObject->texturePath.empty()) {
+			ImGui::Spacing();
+			ImGui::Checkbox("Mix Color", &selectedObject->mixColor);
+		}
+
+		ImGui::Unindent();
 	}
 
-	if (!selectedObject->texturePath.empty()) {
-		ImGui::Spacing();
-		ImGui::Checkbox("Mix Color", &selectedObject->mixColor);
+	ImGui::ItemSize(ImVec2(0, 10));
+
+	if (ImGui::CollapsingHeader("Manage", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Indent();
+		ImGui::InputText("##RenameInput", renameGameObjectBuffer, sizeof(renameGameObjectBuffer));
+		ImGui::SameLine();
+		if (ImGui::Button("Rename")) {
+			selectedObject->SetName(renameGameObjectBuffer);
+		}
+		if (ImGui::Button("Delete")) {
+			scene->RemoveGameObject(selectedObject);
+			selectedObject = nullptr;
+		}
+		ImGui::Unindent();
 	}
 
-	ImGui::Unindent();
+	/* ImGui::Text("Colours"); */
+	/* ImGui::Separator(); */
+	/* ImGui::Indent(); */
+	/* ImGui::Spacing(); */
+	/* ImGui::ColorEdit3("Color", glm::value_ptr(selectedObject->color)); */
+	/* ImGui::Unindent(); */
 
-	ImGui::Spacing();
+	/* ImGui::Text("Textures"); */
+	/* ImGui::Separator(); */
+	/* ImGui::Indent(); */
+	/* ImGui::Spacing(); */
+	/* auto diriter = std::filesystem::directory_iterator(this->paths.projectPath + "/textures/"); */
 
-	ImGui::Text("Manage");
-	ImGui::Separator();
-	ImGui::Indent();
-	ImGui::Spacing();
+	/* if (diriter == std::filesystem::directory_iterator()) { */
+	/* 	ImGui::Text("No textures found"); */
+	/* } */
 
-	ImGui::InputText("##RenameInput", renameGameObjectBuffer, sizeof(renameGameObjectBuffer));
-	ImGui::SameLine();
-	if (ImGui::Button("Rename")) {
-		selectedObject->SetName(renameGameObjectBuffer);
-	}
+	/* for (auto& texture : diriter) { */
+	/* 	if (texture.is_regular_file() && texture.path().extension() == ".png" || texture.path().extension() == ".jpg") { */
+	/* 		bool isSelected = selectedObject->texturePath == texture.path().string(); */
+	/* 		if (ImGui::Selectable(texture.path().filename().string().c_str(), isSelected)) { */
+	/* 			scene->SetGameObjectTexture(selectedObject, texture.path().string()); */
+	/* 		} */
+	/* 	} */
+	/* } */
 
-	if (ImGui::Button("Delete")) {
-		scene->RemoveGameObject(selectedObject);
-		selectedObject = nullptr;
-	}
+	/* if (!selectedObject->texturePath.empty()) { */
+	/* 	ImGui::Spacing(); */
+	/* 	ImGui::Checkbox("Mix Color", &selectedObject->mixColor); */
+	/* } */
 
-	ImGui::Unindent();
+	/* ImGui::Unindent(); */
+
+	/* ImGui::Spacing(); */
+
+	/* ImGui::Text("Manage"); */
+	/* ImGui::Separator(); */
+	/* ImGui::Indent(); */
+	/* ImGui::Spacing(); */
+
+	/* ImGui::InputText("##RenameInput", renameGameObjectBuffer, sizeof(renameGameObjectBuffer)); */
+	/* ImGui::SameLine(); */
+	/* if (ImGui::Button("Rename")) { */
+	/* 	selectedObject->SetName(renameGameObjectBuffer); */
+	/* } */
+
+	/* if (ImGui::Button("Delete")) { */
+	/* 	scene->RemoveGameObject(selectedObject); */
+	/* 	selectedObject = nullptr; */
+	/* } */
+
 	ImGui::Unindent();
 
 	ImGui::End();
@@ -346,54 +381,6 @@ void Manager::explorer(Jenjin::Scene* scene) {
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 256);
 
 	static bool demo_tools; ImGui::Checkbox("Demo Tools", &demo_tools); if (demo_tools) ImGui::ShowDemoWindow(&demo_tools);
-	static bool jenjin_demo; ImGui::Checkbox("Jenjin Demo", &jenjin_demo);
-
-	static float hue = 0.0f;
-	auto change_ui_hue = [](float hue) {
-		ImGuiStyle& style = ImGui::GetStyle();
-		for (int i = 0; i < ImGuiCol_COUNT; i++) {
-			static ImVec4* colors = style.Colors;
-			float h, s, v; ImGui::ColorConvertRGBtoHSV(colors[i].x, colors[i].y, colors[i].z, h, s, v);
-			float r, g, b; ImGui::ColorConvertHSVtoRGB(hue, s, v, r, g, b);
-			colors[i] = ImVec4(r, g, b, colors[i].w);
-		}
-	};
-	hue = fmodf(hue + 0.0012f, 1.0f);
-	change_ui_hue(hue);
-
-	/*if (jenjin_demo) {
-		static float hue = 0.0f;
-
-		auto change_ui_hue = [](float hue) {
-			ImGuiStyle& style = ImGui::GetStyle();
-			for (int i = 0; i < ImGuiCol_COUNT; i++) {
-				static ImVec4* colors = style.Colors;
-				float h, s, v; ImGui::ColorConvertRGBtoHSV(colors[i].x, colors[i].y, colors[i].z, h, s, v);
-				float r, g, b; ImGui::ColorConvertHSVtoRGB(hue, s, v, r, g, b);
-				colors[i] = ImVec4(r, g, b, colors[i].w);
-			}
-		};
-
-		float ch, cs, cv;
-		ch = 0.0f; cs = 1.0f; cv = 1.0f;
-		float cr, cg, cb;
-		ImGui::ColorConvertHSVtoRGB(hue, cs, cv, cr, cg, cb);
-		static ImVec4 col = ImVec4(cr, cg, cb, 1.0f);
-		if (ImGui::ColorEdit3("Base colour", (float*)&col)) {
-			float nh, ns, nv;
-			ImGui::ColorConvertRGBtoHSV(col.x, col.y, col.z, nh, ns, nv);
-			hue = nh;
-			change_ui_hue(hue);
-		}
-
-		if (ImGui::DragFloat("Hue", &hue, 0.001f, 0.0f, 1.0f)) {
-			change_ui_hue(hue);
-		}
-
-		/* static bool rainbow; ImGui::Checkbox("Rainbow", &rainbow); */
-	/* if (rainbow) { */
-	/* }
-	}*/
 
 	ImGui::End();
 }
@@ -510,7 +497,7 @@ void Manager::welcome() {
 	ImGui::SameLine();
 
 	if (ImGui::Button("New Project")) {
-		ImGui::OpenPopup("NewProject");
+		ImGui::OpenPopup("New Project");
 	}
 
 	ImGui::SameLine();
@@ -522,7 +509,7 @@ void Manager::welcome() {
 		ImGui::OpenPopup("DeleteProject");
 	}
 
-	if (ImGui::BeginPopupModal("NewProject", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopupModal("New Project", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 		static char projectName[128] = {0};
 		ImGui::InputText("Project Name", projectName, sizeof(projectName));
 		if (ImGui::Button("Create##NewProject") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
