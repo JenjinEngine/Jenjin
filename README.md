@@ -7,19 +7,18 @@ Come back later, sorry! Jenjin is not ready for real usage.
 
 ## TODO
 - [x] Basic architecture
-- [x] Scene management/renderring
-- [x] Editor target
-- [x] Editor UI
+- [x] Scene renderring
+- [x] Editor
 - [x] Serialization/Deserialization of scenes
 - [x] Texture loading
-- [x] Editor styling
-- [x] File explorer
+- [ ] Transparency on sprites
 - [ ] Scripting (Lua)
 - [ ] Code editor in the editor
 - [ ] Dynamic data attached to game objects at runtime
 - [ ] Hierarchy and `.Parent` in Lua along with `workspace` (e.g. `Workspace.MyGameObject.Parent` == `Workspace`)
 
 ## TODO (Future)
+- [ ] Serialization/Deserialization of scenes to better formats
 - [ ] Scripting (Python)
 - [ ] Physics engine
 - [ ] Instancing
