@@ -1,0 +1,55 @@
+name: build
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - name: Checkout jenjin
+        uses: actions/checkout@v4
+        with:
+          path: jenjin
+          submodules: 'recursive'
+      - name: Remove Strawberry Perl From Path
+        run: |
+          move /y C:\Strawberry C:\Strawberry_not_in_PATH
+          exit /b 0
+      - name: Configure
+        run: cmake -Bbuild -Hjenjin -T v142 -A x64 -DCMAKE_INSTALL_PREFIX=%CD%\install
+      - name: Install
+        run: cmake --build build --config Release -j2
+      - name: List
+        run: dir build\jenjin\Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jenjin_windows-x64
+          path: |
+            build/jenjin/Release/jenjin.exe
+            jenjin/resources/
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout jenjin
+        uses: actions/checkout@v4
+        with:
+          path: jenjin
+          submodules: 'recursive'
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential cmake
+          sudo apt install libwayland-dev libxkbcommon-dev xorg-dev
+      - name: Configure
+        run: cmake -Bbuild -Hjenjin -DCMAKE_INSTALL_PREFIX=$PWD/install
+      - name: Build
+        run: cmake --build build --config Release -j2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jenjin_linux-x64
+          path: |
+            build/jenjin/jenjin
+            jenjin/resources
