@@ -1,5 +1,4 @@
 # Jenjin (Engine/Editor)
-
 A source available lightweight game engine built for beginners to teach programming for education purposes.
 
 ## Usage

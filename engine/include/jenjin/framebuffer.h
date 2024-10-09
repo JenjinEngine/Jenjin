@@ -5,18 +5,18 @@
 namespace Jenjin {
 class Framebuffer {
 public:
-	Framebuffer();
-	~Framebuffer();
+  Framebuffer();
+  ~Framebuffer();
 
-	void Bind();
-	void Unbind();
+  void Bind();
+  void Unbind();
 
-	void Resize(int width, int height);
+  void Resize(int width, int height);
 
-	GLuint texture;
+  GLuint texture;
 
 private:
-	GLuint fbo;
-	GLuint rbo;
+  GLuint fbo;
+  GLuint rbo;
 };
-}
+} // namespace Jenjin

@@ -1,3 +1,5 @@
+#define GLFW_INCLUDE_NONE
+
 #include "jenjin/targets/editor.h"
 #include "jenjin/engine.h"
 #include "jenjin/framebuffer.h"
@@ -12,99 +14,96 @@
 
 using namespace Jenjin::Targets;
 
-EditorTarget::EditorTarget() {
-}
+EditorTarget::EditorTarget() {}
 
 void EditorTarget::PreRender() {
-	static int i = 0; if (i < 5) { i++;
-		Jenjin::EngineRef->GetCurrentScene()->GetCamera()->SetPosition(glm::vec3(0, 0, 0));
-	}
+  static int i = 0;
+  if (i < 5) {
+    i++;
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+    Jenjin::EngineRef->GetCurrentScene()->GetCamera()->SetPosition(
+        glm::vec3(0, 0, 0));
+  }
 
-	Resize(GetSize());
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
 
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
+  Resize(GetSize());
 
-	this->editor.show_all(Jenjin::EngineRef->GetCurrentScene());
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
 
-	renderTexture.Bind();
+  this->editor.show_all(Jenjin::EngineRef->GetCurrentScene());
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, width, height);
+  renderTexture.Bind();
+
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glViewport(0, 0, width, height);
 }
 
 void EditorTarget::Render() {
-	renderTexture.Unbind();
+  renderTexture.Unbind();
 
-	if (this->editor.paths.openScenePath.empty()) {
-		return;
-	}
+  if (this->editor.paths.openScenePath.empty()) {
+    return;
+  }
 
-	ImGui::Begin("Viewport");
+  ImGui::Begin("Viewport");
 
-	ImVec2 size = ImGui::GetContentRegionAvail();
-	this->width = size.x;
-	this->height = size.y;
+  ImVec2 size = ImGui::GetContentRegionAvail();
+  this->width = size.x;
+  this->height = size.y;
 
-	ImGui::GetWindowDrawList()->AddImage(
-		(void*)(intptr_t)renderTexture.texture,
-		ImVec2(ImGui::GetCursorScreenPos()),
-		ImVec2(ImGui::GetCursorScreenPos().x + size.x,
-				 ImGui::GetCursorScreenPos().y + size.y),
-		ImVec2(0, 1),
-		ImVec2(1, 0)
-	);
+  ImGui::GetWindowDrawList()->AddImage(
+      (void *)(intptr_t)renderTexture.texture,
+      ImVec2(ImGui::GetCursorScreenPos()),
+      ImVec2(ImGui::GetCursorScreenPos().x + size.x,
+             ImGui::GetCursorScreenPos().y + size.y),
+      ImVec2(0, 1), ImVec2(1, 0));
 
-	std::string res_text = std::to_string((int)size.x) + "x" + std::to_string((int)size.y);
-	ImGui::GetWindowDrawList()->AddText(
-		ImVec2(ImGui::GetCursorScreenPos().x + 10, ImGui::GetCursorScreenPos().y + 10),
-		ImColor(255, 255, 255, 255),
-		res_text.c_str()
-	);
+  std::string res_text =
+      std::to_string((int)size.x) + "x" + std::to_string((int)size.y);
+  ImGui::GetWindowDrawList()->AddText(
+      ImVec2(ImGui::GetCursorScreenPos().x + 10,
+             ImGui::GetCursorScreenPos().y + 10),
+      ImColor(255, 255, 255, 255), res_text.c_str());
 
-	ImGui::End();
+  ImGui::End();
 }
 
 void EditorTarget::PostRender() {
-	ImGui::EndFrame();
-	ImGui::Render();
+  ImGui::EndFrame();
+  ImGui::Render();
 
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-glm::vec2 EditorTarget::GetSize() {
-	return glm::vec2(width, height);
-}
+glm::vec2 EditorTarget::GetSize() { return glm::vec2(width, height); }
 
 void EditorTarget::Resize(glm::vec2 size) {
-	this->width = size.x;
-	this->height = size.y;
-	renderTexture.Resize(width, height);
-	Jenjin::EngineRef->GetCurrentScene()->GetCamera()->Resize(size);
+  this->width = size.x;
+  this->height = size.y;
+  renderTexture.Resize(width, height);
+  Jenjin::EngineRef->GetCurrentScene()->GetCamera()->Resize(size);
 }
 
 glm::vec2 EditorTarget::GetMousePosition() {
-	// WARNING: Untested...
+  // WARNING: Untested...
 
-	static auto ctx = glfwGetCurrentContext();
-	static double gx, gy;
-	glfwGetCursorPos(ctx, &gx, &gy);
+  static auto ctx = glfwGetCurrentContext();
+  static double gx, gy;
+  glfwGetCursorPos(ctx, &gx, &gy);
 
-	// g_ is the whole window
-	// l_ is the viewport we need to calculate this
-	auto l_ = ImGui::GetWindowPos();
-	auto lx = gx - l_.x;
-	auto ly = gy - l_.y;
+  // g_ is the whole window
+  // l_ is the viewport we need to calculate this
+  auto l_ = ImGui::GetWindowPos();
+  auto lx = gx - l_.x;
+  auto ly = gy - l_.y;
 
-	return glm::vec2(lx, ly);
+  return glm::vec2(lx, ly);
 }
 
 // We handle window resizing ourselves
-bool EditorTarget::RespondsToWindowResize() {
-	return false;
-}
+bool EditorTarget::RespondsToWindowResize() { return false; }

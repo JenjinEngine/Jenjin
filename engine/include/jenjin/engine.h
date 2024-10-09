@@ -3,27 +3,27 @@
 #include "jenjin/scene.h"
 #include "jenjin/target.h"
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 namespace Jenjin {
 class Engine {
 public:
-	Engine(GLFWwindow* window);
-	~Engine();
+  Engine(GLFWwindow *window);
+  ~Engine();
 
-	void AddScene(std::shared_ptr<Scene> scene, bool defaultScene = false);
+  void AddScene(std::shared_ptr<Scene> scene, bool defaultScene = false);
 
-	void Render(Target* target); // Render directly to the target
+  void Render(Target *target); // Render directly to the target
 
-	GLFWwindow* glfwContext;
+  GLFWwindow *glfwContext;
 
-	Scene* GetCurrentScene() { return currentScene; }
+  Scene *GetCurrentScene() { return currentScene; }
 
 private:
-	std::vector<std::shared_ptr<Scene>> scenes = {};
-	Scene* currentScene = nullptr;
+  std::vector<std::shared_ptr<Scene>> scenes = {};
+  Scene *currentScene = nullptr;
 };
 
-extern Engine* EngineRef;
-}
+extern Engine *EngineRef;
+} // namespace Jenjin

@@ -7,19 +7,19 @@
 
 namespace Jenjin {
 struct MeshReference {
-	int baseVertex;
-	int baseIndex;
-	int indexCount;
-	int vertexCount;
+  int baseVertex;
+  int baseIndex;
+  int indexCount;
+  int vertexCount;
 };
 
 struct Vertex {
-	glm::vec3 position;
-	glm::vec2 texCoord;
+  glm::vec3 position;
+  glm::vec2 texCoord;
 };
 
 struct Mesh {
-	std::vector<Vertex> vertices;
-	std::vector<GLuint> indices;
+  std::vector<Vertex> vertices;
+  std::vector<GLuint> indices;
 };
-}
+} // namespace Jenjin

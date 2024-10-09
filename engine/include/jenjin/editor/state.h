@@ -6,7 +6,7 @@ namespace Jenjin {
 namespace Editor {
 class State_t {
 public:
-	GLuint renderTexture;
+  GLuint renderTexture;
 } extern State;
-}
-}
+} // namespace Editor
+} // namespace Jenjin

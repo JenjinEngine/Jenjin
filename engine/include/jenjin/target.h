@@ -11,15 +11,20 @@ namespace Jenjin {
 // like a viewport.
 class Target {
 public:
-	virtual void PreRender() {}; // Called before rendering
-	virtual void Render() {}; // Called during rendering (usually not needed)
-	virtual void PostRender() {}; // Called after rendering
+  virtual void PreRender() {};  // Called before rendering
+  virtual void Render() {};     // Called during rendering (usually not needed)
+  virtual void PostRender() {}; // Called after rendering
 
-	virtual glm::vec2 GetSize() { return glm::vec2(-1, -1); }; // Get the size of the target
-	virtual void Resize(glm::vec2 size) {}; // Resize the target
+  // Get the size of the target
+  virtual glm::vec2 GetSize() { return glm::vec2(-1, -1); };
 
-	virtual glm::vec2 GetMousePosition() { return glm::vec2(-1, -1); }; // Get the mouse position
+  // Resize the target
+  virtual void Resize(glm::vec2 size) {};
 
-	virtual bool RespondsToWindowResize() { return true; }; // Does the target respond to events of the window resizing
+  // Get the mouse position
+  virtual glm::vec2 GetMousePosition() { return glm::vec2(-1, -1); };
+
+  // Does the target respond to events of the window resizing
+  virtual bool RespondsToWindowResize() { return true; };
 };
-}
+} // namespace Jenjin
