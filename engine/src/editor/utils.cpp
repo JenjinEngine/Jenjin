@@ -4,8 +4,8 @@
 
 #include <spdlog/spdlog.h>
 
-#include <filesystem>
 #include <cstdlib>
+#include <filesystem>
 
 void Jenjin::Editor::ensure_dir(std::string path) {
   if (!std::filesystem::exists(path)) {

@@ -40,6 +40,8 @@ private:
   bool selectedCamera = false;
 
   char renameGameObjectBuffer[256] = {0};
+
+  bool running = false;
 };
 } // namespace Editor
 } // namespace Jenjin

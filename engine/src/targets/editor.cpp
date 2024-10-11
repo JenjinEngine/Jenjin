@@ -17,10 +17,11 @@ using namespace Jenjin::Targets;
 EditorTarget::EditorTarget() {}
 
 void EditorTarget::PreRender() {
-  static int i = 0;
-  if (i < 5) {
-    i++;
-
+  // HACK: This is a hack to set the camera position to 0,0,0..
+  // This needs to be done properly.
+  static bool done = false;
+  if (!done) {
+    done = true;
     Jenjin::EngineRef->GetCurrentScene()->GetCamera()->SetPosition(
         glm::vec3(0, 0, 0));
   }

@@ -53,15 +53,34 @@ void Manager::menu() {
     if (!this->paths.openScenePath.empty()) {
       if (ImGui::BeginMenu("Scripts")) {
         if (ImGui::MenuItem("Reload")) {
-          spdlog::warn("Unimplemented: Reload Scripts");
+          auto luaManager =
+              Jenjin::EngineRef->GetCurrentScene()->GetLuaManager();
+
+          luaManager->ReloadScripts(this->paths.projectPath + "/scripts/");
+          luaManager->Ready();
         }
 
         ImGui::EndMenu();
       }
 
       if (ImGui::BeginMenu("Game")) {
-        if (ImGui::MenuItem("Play")) {
-          spdlog::warn("Unimplemented: Play");
+        if (ImGui::MenuItem(this->running ? "Stop" : "Play")) {
+          this->running = !this->running;
+
+          auto scene = Jenjin::EngineRef->GetCurrentScene();
+
+          if (this->running) {
+            scene->Save(this->paths.liveScenePath);
+
+            Jenjin::EngineRef->GetCurrentScene()
+                ->GetLuaManager()
+                ->LoadDirectory(
+                    (this->paths.projectPath + "/scripts/").c_str());
+
+            scene->GetLuaManager()->Ready();
+          } else {
+            scene->Load(this->paths.liveScenePath);
+          }
         }
 
         ImGui::EndMenu();
@@ -305,7 +324,12 @@ void Manager::inspector(Jenjin::Scene *scene) {
             selectedObject->texturePath == texture.path().string();
         if (ImGui::Selectable(texture.path().filename().string().c_str(),
                               isSelected)) {
-          scene->SetGameObjectTexture(selectedObject, texture.path().string());
+          if (isSelected) {
+            scene->SetGameObjectTexture(selectedObject, "");
+          } else {
+            scene->SetGameObjectTexture(selectedObject,
+                                        texture.path().string());
+          }
         }
       }
     }
@@ -336,64 +360,6 @@ void Manager::inspector(Jenjin::Scene *scene) {
     }
     ImGui::Unindent();
   }
-
-  /* ImGui::Text("Colours"); */
-  /* ImGui::Separator(); */
-  /* ImGui::Indent(); */
-  /* ImGui::Spacing(); */
-  /* ImGui::ColorEdit3("Color", glm::value_ptr(selectedObject->color)); */
-  /* ImGui::Unindent(); */
-
-  /* ImGui::Text("Textures"); */
-  /* ImGui::Separator(); */
-  /* ImGui::Indent(); */
-  /* ImGui::Spacing(); */
-  /* auto diriter = std::filesystem::directory_iterator(this->paths.projectPath
-   * + "/textures/"); */
-
-  /* if (diriter == std::filesystem::directory_iterator()) { */
-  /* 	ImGui::Text("No textures found"); */
-  /* } */
-
-  /* for (auto& texture : diriter) { */
-  /* 	if (texture.is_regular_file() && texture.path().extension() == ".png" ||
-   * texture.path().extension() == ".jpg") { */
-  /* 		bool isSelected = selectedObject->texturePath ==
-   * texture.path().string(); */
-  /* 		if
-   * (ImGui::Selectable(texture.path().filename().string().c_str(), isSelected))
-   * { */
-  /* 			scene->SetGameObjectTexture(selectedObject,
-   * texture.path().string()); */
-  /* 		} */
-  /* 	} */
-  /* } */
-
-  /* if (!selectedObject->texturePath.empty()) { */
-  /* 	ImGui::Spacing(); */
-  /* 	ImGui::Checkbox("Mix Color", &selectedObject->mixColor); */
-  /* } */
-
-  /* ImGui::Unindent(); */
-
-  /* ImGui::Spacing(); */
-
-  /* ImGui::Text("Manage"); */
-  /* ImGui::Separator(); */
-  /* ImGui::Indent(); */
-  /* ImGui::Spacing(); */
-
-  /* ImGui::InputText("##RenameInput", renameGameObjectBuffer,
-   * sizeof(renameGameObjectBuffer)); */
-  /* ImGui::SameLine(); */
-  /* if (ImGui::Button("Rename")) { */
-  /* 	selectedObject->SetName(renameGameObjectBuffer); */
-  /* } */
-
-  /* if (ImGui::Button("Delete")) { */
-  /* 	scene->RemoveGameObject(selectedObject); */
-  /* 	selectedObject = nullptr; */
-  /* } */
 
   ImGui::Unindent();
 
@@ -465,6 +431,19 @@ void Manager::backup_prompts(Jenjin::Scene *scene) {
 void Manager::code(Jenjin::Scene *scene) {}
 
 void Manager::show_all(Jenjin::Scene *scene) {
+  bool isRunning = this->running;
+  if (isRunning) {
+    scene->Update();
+
+    auto bg = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
+    auto red_bg = ImVec4((bg.x + 0.01) * 1.5f, bg.y, bg.z, bg.w);
+    auto red_bg_dark =
+        ImVec4((bg.x + 0.01) * 1.5, bg.y * 0.9, bg.z * 0.9, bg.w);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, red_bg);
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, red_bg_dark);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, red_bg);
+  }
+
   if (this->paths.projectPath.empty()) {
     menu();
     dockspace();
@@ -475,6 +454,8 @@ void Manager::show_all(Jenjin::Scene *scene) {
 
   menu();
   dockspace();
+  if (isRunning)
+    ImGui::PopStyleColor(3);
 
   hierarchy(scene);
   inspector(scene);
@@ -493,6 +474,7 @@ void Manager::welcome() {
             ImGui::GetFrameHeightWithSpacing();
   int spad = ImGui::GetStyle().WindowPadding.y * 2 +
              ImGui::GetStyle().ItemSpacing.y * 2;
+
   ImGui::BeginChild(
       "WelcomeChild",
       ImVec2(ImGui::GetWindowWidth() - ImGui::GetStyle().WindowPadding.x * 2,
@@ -509,13 +491,11 @@ void Manager::welcome() {
 
     Jenjin::EngineRef->GetCurrentScene()->GetGameObjects()->clear();
     std::ifstream ifile(this->paths.openScenePath);
-    /* Jenjin::EngineRef->GetCurrentScene()->load(ifile); */
     Jenjin::EngineRef->GetCurrentScene()->Load(this->paths.openScenePath);
 
     // Load all the lua files
-    spdlog::warn("Unimplemented: Load Lua files");
-    /* Jenjin::EngineRef->GetCurrentScene()->reload_lua((this->paths.projectPath
-     * + "/scripts/").c_str()); */
+    Jenjin::EngineRef->GetCurrentScene()->GetLuaManager()->LoadDirectory(
+        (this->paths.projectPath + "/scripts/").c_str());
   };
 
   for (auto file : std::filesystem::directory_iterator(

@@ -1,8 +1,8 @@
 #define GLFW_INCLUDE_NONE
 
 #include "jenjin/editor/utils.h"
-#include "jenjin/targets/default.h"
 #include "jenjin/targets/editor.h"
+#include "jenjin/targets/runtime.h"
 
 #include "jenjin/engine.h"
 #include "jenjin/helpers.h"
@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
   auto scene = std::make_shared<Jenjin::Scene>();
   engine.AddScene(scene, true);
 
+	spdlog::info("Launching Jenjin {}", editor ? "Editor" : "Runtime");
   (editor ? launchEditor : launchRuntime)(engine, window, scene);
 }
 
@@ -56,8 +57,15 @@ void launchEditor(LAUNCH_ARGS) {
 }
 
 void launchRuntime(LAUNCH_ARGS) {
-  auto runtime = Jenjin::Targets::DefaultTarget();
+  auto runtime = Jenjin::Targets::RuntimeTarget();
   scene->SetTarget(&runtime);
+
+	if (!std::filesystem::exists("scripts")) {
+		spdlog::error("Could not find `scripts` directory");
+		exit(1);
+	}
+
+	scene->GetLuaManager()->LoadDirectory("scripts");
 
   // Look for `main.jenscene` in the current directory
   if (!std::filesystem::exists("main.jenscene")) {
@@ -66,6 +74,7 @@ void launchRuntime(LAUNCH_ARGS) {
   }
 
   scene->Load("main.jenscene");
+	scene->GetLuaManager()->Ready();
 
   while (!glfwWindowShouldClose(window)) {
     engine.Render(&runtime);

@@ -2,6 +2,7 @@
 
 #include "jenjin/camera.h"
 #include "jenjin/gameobject.h"
+#include "jenjin/luamanager.h"
 #include "jenjin/shader.h"
 #include "jenjin/target.h"
 #include "jenjin/texture.h"
@@ -36,11 +37,14 @@ public:
   void Update();
   void Render();
 
+  std::shared_ptr<GameObject> GetGameObject(const std::string &name);
+
   Camera *GetCamera() { return &camera; }
   std::vector<std::shared_ptr<GameObject>> *GetGameObjects() {
     return &gameObjects;
   }
   Target *GetTarget() { return target; }
+  LuaManager *GetLuaManager() { return &luaManager; }
 
   void Save(const std::string &path);
   void Save(std::ofstream &file);
@@ -60,5 +64,7 @@ private:
   Target *target = nullptr;
 
   Camera camera = Camera(&shader, glm::vec2(800, 600));
+
+  LuaManager luaManager;
 };
 } // namespace Jenjin

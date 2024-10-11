@@ -10,8 +10,9 @@ Come back later, sorry! Jenjin is not ready for real usage.
 - [x] Editor
 - [x] Serialization/Deserialization of scenes
 - [x] Texture loading
+- [x] Scripting (Lua)
 - [ ] Transparency on sprites
-- [ ] Scripting (Lua)
+- [ ] Icons everywhere
 - [ ] Code editor in the editor
 - [ ] Dynamic data attached to game objects at runtime
 - [ ] Hierarchy and `.Parent` in Lua along with `workspace` (e.g. `Workspace.MyGameObject.Parent` == `Workspace`)

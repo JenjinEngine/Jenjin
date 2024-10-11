@@ -1,5 +1,6 @@
 #pragma once
 
+#include "jenjin/luamanager.h"
 #include "jenjin/scene.h"
 #include "jenjin/target.h"
 
@@ -23,6 +24,8 @@ public:
 private:
   std::vector<std::shared_ptr<Scene>> scenes = {};
   Scene *currentScene = nullptr;
+
+	LuaManager luaManager;
 };
 
 extern Engine *EngineRef;

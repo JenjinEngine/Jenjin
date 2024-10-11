@@ -5,8 +5,8 @@
 #include <spdlog/spdlog.h>
 
 #include <glm/glm.hpp>
-#include <glm/trigonometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/trigonometric.hpp>
 
 using namespace Jenjin;
 

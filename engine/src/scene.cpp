@@ -43,6 +43,12 @@ void Scene::RemoveGameObject(GameObject *gameObject) {
 
 void Scene::SetGameObjectTexture(GameObject *gameObject,
                                  const std::string &texturePath) {
+
+  if (texturePath.empty()) {
+    gameObject->texturePath = "";
+    return;
+  }
+
   if (this->textures.find(texturePath) == this->textures.end()) {
     auto alpha = texturePath.find(".png") != std::string::npos;
     this->textures[texturePath] =
@@ -112,7 +118,7 @@ void Scene::Build() {
   spdlog::debug("Generated buffers (vao: {}, vbo: {}, ebo: {})", vao, vbo, ebo);
 }
 
-void Scene::Update() { spdlog::trace("Scene::Update()"); }
+void Scene::Update() { this->luaManager.Update(); }
 
 void Scene::Render() {
   this->shader.use();
@@ -152,6 +158,16 @@ void Scene::Render() {
     glDrawElementsBaseVertex(GL_TRIANGLES, meshReference->indexCount,
                              GL_UNSIGNED_INT, 0, meshReference->baseVertex);
   }
+}
+
+std::shared_ptr<GameObject> Scene::GetGameObject(const std::string &name) {
+  for (auto &go : this->gameObjects) {
+    if (go->name == name) {
+      return go;
+    }
+  }
+
+  return nullptr;
 }
 
 struct GOBJSAVABLE {

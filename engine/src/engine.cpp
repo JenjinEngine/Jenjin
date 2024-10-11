@@ -22,6 +22,9 @@ Engine::Engine(GLFWwindow *window) {
   spdlog::debug("Initializing Jenjin {}", VERSION);
 
   glfwSetErrorCallback([](int code, const char *error) {
+    if (code == 65540 || code == 65539)
+      return;
+
     spdlog::error("GLFW Error: {} ({})", error, code);
   });
 
