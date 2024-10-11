@@ -443,7 +443,8 @@ void LuaManager::LoadFile(const std::string &file) {
   auto res = lua.safe_script_file(file, sol::script_pass_on_error);
 
   if (!res.valid()) {
-    spdlog::error("[LUA] {}", sol::error(res).what());
+    sol::error err = res;
+    spdlog::error("[LUA] {}", err.what());
   }
 
   sol::optional<sol::function> readyt =
@@ -481,7 +482,8 @@ void LuaManager::Execute(const std::string &script) {
   auto res = lua.safe_script(script, sol::script_pass_on_error);
 
   if (!res.valid()) {
-    spdlog::error("[LUA] {}", sol::error(res).what());
+    sol::error err = res;
+    spdlog::error("[LUA] {}", err.what());
   }
 }
 
@@ -489,7 +491,8 @@ void LuaManager::ExecuteFile(const std::string &file) {
   auto res = lua.safe_script_file(file, sol::script_pass_on_error);
 
   if (!res.valid()) {
-    spdlog::error("[LUA] {}", sol::error(res).what());
+    sol::error err = res;
+    spdlog::error("[LUA] {}", err.what());
   }
 }
 
@@ -506,7 +509,8 @@ void LuaManager::Ready() {
       auto res = ready();
 
       if (!res.valid()) {
-        spdlog::error("[LUA] {}", sol::error(res).what());
+        sol::error err = res;
+        spdlog::error("[LUA] {}", err.what());
       }
     }
   }
@@ -521,7 +525,8 @@ void LuaManager::Update() {
       auto res = update();
 
       if (!res.valid()) {
-        spdlog::error("[LUA] {}", sol::error(res).what());
+        sol::error err = res;
+        spdlog::error("[LUA] {}", err.what());
       }
     }
   }
