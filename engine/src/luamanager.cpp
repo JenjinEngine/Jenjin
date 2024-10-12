@@ -467,15 +467,8 @@ void LuaManager::LoadFile(const std::string &file) {
 }
 
 void LuaManager::ReloadScripts(const std::string &directory) {
-  /*std::vector<std::string> keys(functions | std::views::keys |*/
-  /*                              std::ranges::to<std::vector<std::string>>());*/
-
   functions.clear();
   this->LoadDirectory(directory);
-
-  /*for (auto &path : keys) {*/
-  /*  LoadFile(path);*/
-  /*}*/
 }
 
 void LuaManager::Execute(const std::string &script) {

@@ -11,7 +11,7 @@ Come back later, sorry! Jenjin is not ready for real usage.
 - [x] Serialization/Deserialization of scenes
 - [x] Texture loading
 - [x] Scripting (Lua)
-- [ ] Transparency on sprites
+- [x] Transparency on sprites
 - [ ] Icons everywhere
 - [ ] Code editor in the editor
 - [ ] Dynamic data attached to game objects at runtime

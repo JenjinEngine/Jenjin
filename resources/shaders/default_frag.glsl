@@ -16,7 +16,13 @@ void main() {
 		return;
 	}
 
-	FragColor = texture(u_texture, j_fragTexCoord).rgb;
+	vec4 colour = texture(u_texture, j_fragTexCoord);
+
+	if (colour.a < 0.01) {
+		discard;
+	}
+
+	FragColor = vec3(colour.r, colour.g, colour.b);
 
 	if (u_mixColor) {
 		FragColor *= u_color;
