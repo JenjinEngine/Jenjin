@@ -43,12 +43,14 @@ public:
   glm::vec2 GetPosition() { return transform.position; }
   glm::vec2 GetScale() { return transform.scale; }
   float GetRotation() { return transform.rotation; }
+	glm::vec3 GetColor() { return color; }
 
   // Setters
   void SetName(std::string name) { this->name = name; }
   void SetPosition(glm::vec2 position) { transform.position = position; }
   void SetScale(glm::vec2 scale) { transform.scale = scale; }
   void SetRotation(float rotation) { transform.rotation = rotation; }
+	void SetColor(glm::vec3 color) { this->color = color; }
 
   // Pointer getters
   std::string *GetNamePointer() { return &name; }

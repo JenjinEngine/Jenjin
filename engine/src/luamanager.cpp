@@ -1,8 +1,8 @@
-#include <memory>
 #define GLFW_INCLUDE_NONE
 
-#include "jenjin/engine.h"
 #include "jenjin/luamanager.h"
+#include "jenjin/engine.h"
+#include "jenjin/helpers.h"
 
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/glm.hpp>
@@ -17,11 +17,10 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
-#include <ranges>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 using namespace Jenjin;
 
@@ -185,6 +184,11 @@ void Bindings(LuaManager *lm, sol::state &lua) {
         } else {
           return -1.0f;
         }
+      },
+
+      "Distance",
+      [](const glm::vec2 &lhs, const glm::vec2 &rhs) {
+        return glm::distance(lhs, rhs);
       });
 
   // glm::vec3
@@ -280,6 +284,11 @@ void Bindings(LuaManager *lm, sol::state &lua) {
         } else {
           return -1.0f;
         }
+      },
+
+      "Distance",
+      [](const glm::vec3 &lhs, const glm::vec3 &rhs) {
+        return glm::distance(lhs, rhs);
       });
 
   // ========================================================================
@@ -333,10 +342,10 @@ void Bindings(LuaManager *lm, sol::state &lua) {
               Scene::SetGameObjectTexture,
           (void(Scene::*)(std::shared_ptr<GameObject>, const std::string &)) &
               Scene::SetGameObjectTexture),
-      //"Build", &Scene::Build, "Update", &Scene::Update, "Render",
+      "Build", &Scene::Build,
+      //"Update", &Scene::Update, "Render",
       // &Scene::Render,
       "GetGameObject", &Scene::GetGameObject, "GetCamera", //
-      // Useless for Lua
       &Scene::GetCamera, "GetGameObjects", &Scene::GetGameObjects, "GetTarget",
       &Scene::GetTarget, "GetLuaManager", &Scene::GetLuaManager, "Save",
       sol::overload((void(Scene::*)(const std::string &)) & Scene::Save,
@@ -346,7 +355,7 @@ void Bindings(LuaManager *lm, sol::state &lua) {
                     (void(Scene::*)(std::ifstream &)) & Scene::Load));
 
   lua.new_usertype<GameObject>(
-      "GameObject", sol::factories([](std::string name, Mesh mesh) {
+      "GameObject", sol::factories([](const std::string &name, Mesh mesh) {
         return std::make_shared<GameObject>(name, mesh);
       }),
       "mixColor", &GameObject::mixColor, "GetName", &GameObject::GetName,
@@ -354,6 +363,7 @@ void Bindings(LuaManager *lm, sol::state &lua) {
       &GameObject::GetScale, "GetRotation", &GameObject::GetRotation, "SetName",
       &GameObject::SetName, "SetPosition", &GameObject::SetPosition, "SetScale",
       &GameObject::SetScale, "SetRotation", &GameObject::SetRotation,
+      "GetColor", &GameObject::GetColor, "SetColor", &GameObject::SetColor,
       "Translate", &GameObject::Translate, "Scale", &GameObject::Scale,
       "Rotate", &GameObject::Rotate);
 
@@ -420,6 +430,10 @@ void Bindings(LuaManager *lm, sol::state &lua) {
       return false;
     }
   });
+
+  auto helpers_tb = lua.create_named_table("helpers");
+  helpers_tb.set_function(
+      "CreateQuad", [&]() { return Jenjin::Helpers::CreateQuad(2.0f, 2.0f); });
 }
 
 LuaManager::LuaManager() {
