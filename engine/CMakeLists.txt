@@ -15,6 +15,7 @@ target_include_directories(JenjinEngine
 				${CMAKE_SOURCE_DIR}/megasource/libs/stb/
 				${CMAKE_SOURCE_DIR}/megasource/libs/lua/include/
 				${CMAKE_SOURCE_DIR}/megasource/libs/sol2/include/
+				${CMAKE_SOURCE_DIR}/megasource/libs/IconFontCppHeaders/
 				${CMAKE_SOURCE_DIR}/megasource/libs/
 		PRIVATE
 				${CMAKE_CURRENT_SOURCE_DIR}/src

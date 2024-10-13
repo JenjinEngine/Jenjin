@@ -9,8 +9,11 @@
 #include <imgui_impl_opengl3.h>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <IconsFontAwesome6.h>
 
 #include <GLFW/glfw3.h>
+
+#define VIEWPORT_TITLE ICON_FA_VIDEO " Viewport";
 
 using namespace Jenjin::Targets;
 
@@ -51,7 +54,9 @@ void EditorTarget::Render() {
     return;
   }
 
-  ImGui::Begin("Viewport");
+	static auto title = VIEWPORT_TITLE;
+  ImGui::Begin(title, nullptr,
+							 ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
   ImVec2 size = ImGui::GetContentRegionAvail();
   this->width = size.x;
@@ -91,17 +96,13 @@ void EditorTarget::Resize(glm::vec2 size) {
 }
 
 glm::vec2 EditorTarget::GetMousePosition() {
-  // WARNING: Untested...
-
   static auto ctx = glfwGetCurrentContext();
   static double gx, gy;
   glfwGetCursorPos(ctx, &gx, &gy);
 
-  // g_ is the whole window
-  // l_ is the viewport we need to calculate this
-  auto l_ = ImGui::GetWindowPos();
-  auto lx = gx - l_.x;
-  auto ly = gy - l_.y;
+  auto v = ImGui::GetWindowPos(); // HACK: This is wrong!!! It doesn't get the viewport window pos.
+  auto lx = gx - v.x;
+  auto ly = gy - v.y;
 
   return glm::vec2(lx, ly);
 }

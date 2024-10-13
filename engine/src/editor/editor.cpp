@@ -15,6 +15,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <IconsFontAwesome6.h>
+
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -77,6 +79,7 @@ void Manager::menu() {
                 ->LoadDirectory(
                     (this->paths.projectPath + "/scripts/").c_str());
 
+            spdlog::info("Readying lua manager");
             scene->GetLuaManager()->Ready();
           } else {
             scene->Load(this->paths.liveScenePath);
@@ -148,10 +151,17 @@ void Manager::dockspace() {
                                                   0.6f, nullptr, &dockspace_id);
     auto middle = dockspace_id;
 
-    ImGui::DockBuilderDockWindow("Hierarchy", dock_left_up);
-    ImGui::DockBuilderDockWindow("Explorer", dock_left);
-    ImGui::DockBuilderDockWindow("Inspector", dock_right);
-    ImGui::DockBuilderDockWindow("Viewport", middle);
+    static auto hierarchy_title = ICON_FA_SITEMAP " Hierarchy";
+    ImGui::DockBuilderDockWindow(hierarchy_title, dock_left_up);
+
+    static auto explorer_title = ICON_FA_FOLDER " Explorer";
+    ImGui::DockBuilderDockWindow(explorer_title, dock_left);
+
+    static auto inspector_title = ICON_FA_EYE " Inspector";
+    ImGui::DockBuilderDockWindow(inspector_title, dock_right);
+
+    static auto viewport_title = ICON_FA_VIDEO " Viewport";
+    ImGui::DockBuilderDockWindow(viewport_title, middle);
 
     ImGui::DockBuilderFinish(dockspace_id);
   }
@@ -168,7 +178,8 @@ void Manager::hierarchy(Jenjin::Scene *scene) {
   std::vector<std::shared_ptr<Jenjin::GameObject>> *gameObjects =
       Jenjin::EngineRef->GetCurrentScene()->GetGameObjects();
 
-  ImGui::Begin("Hierarchy");
+  static auto title = ICON_FA_SITEMAP " Hierarchy";
+  ImGui::Begin(title);
 
   static char name[128] = {0};
   // Press or Ctrl + Shift + A
@@ -215,7 +226,8 @@ void Manager::hierarchy(Jenjin::Scene *scene) {
     ImGui::EndPopup();
   }
 
-  if (ImGui::Selectable("Camera", selectedCamera)) {
+  static auto cameraText = ICON_FA_VIDEO " Camera";
+  if (ImGui::Selectable(cameraText, selectedCamera)) {
     selectedCamera = !selectedCamera;
     if (selectedCamera)
       selectedObject = nullptr;
@@ -224,7 +236,8 @@ void Manager::hierarchy(Jenjin::Scene *scene) {
   for (std::shared_ptr<Jenjin::GameObject> gameObject : *gameObjects) {
     bool isSelected = selectedObject == gameObject.get();
 
-    if (ImGui::Selectable(gameObject->name.c_str(), isSelected)) {
+    const auto text = fmt::format("{} {}", ICON_FA_CUBE, gameObject->name);
+    if (ImGui::Selectable(text.c_str(), isSelected)) {
       if (isSelected) {
         selectedObject = nullptr;
       } else {
@@ -246,7 +259,9 @@ void Manager::inspector(Jenjin::Scene *scene) {
     return;
   }
 
-  ImGui::Begin("Inspector");
+  static auto appearance_title = ICON_FA_PALETTE " Appearance";
+  static auto title = ICON_FA_EYE " Inspector";
+  ImGui::Begin(title);
 
   if (selectedCamera) {
     ImGui::Text("Camera");
@@ -274,7 +289,7 @@ void Manager::inspector(Jenjin::Scene *scene) {
 
     ImGui::Unindent();
 
-    ImGui::Text("Appearance");
+    ImGui::Text("%s", appearance_title);
     ImGui::Separator();
     ImGui::Indent();
 
@@ -294,7 +309,9 @@ void Manager::inspector(Jenjin::Scene *scene) {
     return;
   }
 
-  if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+  static auto transform_title = ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform";
+  if (ImGui::CollapsingHeader(transform_title,
+                              ImGuiTreeNodeFlags_DefaultOpen)) {
     ImGui::Indent();
     Jenjin::Editor::Widgets::transformWidget(&selectedObject->transform);
     ImGui::Unindent();
@@ -302,7 +319,7 @@ void Manager::inspector(Jenjin::Scene *scene) {
 
   ImGui::ItemSize(ImVec2(0, 10));
 
-  if (ImGui::CollapsingHeader("Appearance", ImGuiTreeNodeFlags_DefaultOpen)) {
+  if (ImGui::CollapsingHeader(appearance_title)) {
     ImGui::Indent();
     ImGui::ColorPicker3("Color", glm::value_ptr(selectedObject->color));
     ImGui::Unindent();
@@ -310,54 +327,27 @@ void Manager::inspector(Jenjin::Scene *scene) {
 
   ImGui::ItemSize(ImVec2(0, 10));
 
-  if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen)) {
+  static auto manage_title = ICON_FA_JAR " Manage";
+  if (ImGui::CollapsingHeader(manage_title, ImGuiTreeNodeFlags_DefaultOpen)) {
     ImGui::Indent();
-    auto diriter = std::filesystem::directory_iterator(this->paths.projectPath +
-                                                       "/textures/");
-    if (diriter == std::filesystem::directory_iterator()) {
-      ImGui::Text("No textures found");
-    }
-    for (auto &texture : diriter) {
-      if (texture.is_regular_file() && texture.path().extension() == ".png" ||
-          texture.path().extension() == ".jpg") {
-        bool isSelected =
-            selectedObject->texturePath == texture.path().string();
-        if (ImGui::Selectable(texture.path().filename().string().c_str(),
-                              isSelected)) {
-          if (isSelected) {
-            scene->SetGameObjectTexture(selectedObject, "");
-          } else {
-            scene->SetGameObjectTexture(selectedObject,
-                                        texture.path().string());
-          }
-        }
-      }
-    }
 
-    ImGui::ItemSize(ImVec2(0, 2));
+    float itemWidth = ImGui::GetContentRegionAvail().x;
 
-    if (!selectedObject->texturePath.empty()) {
-      ImGui::Spacing();
-      ImGui::Checkbox("Mix Color", &selectedObject->mixColor);
-    }
-
-    ImGui::Unindent();
-  }
-
-  ImGui::ItemSize(ImVec2(0, 10));
-
-  if (ImGui::CollapsingHeader("Manage", ImGuiTreeNodeFlags_DefaultOpen)) {
-    ImGui::Indent();
+    ImGui::SetNextItemWidth(itemWidth);
     ImGui::InputText("##RenameInput", renameGameObjectBuffer,
                      sizeof(renameGameObjectBuffer));
-    ImGui::SameLine();
-    if (ImGui::Button("Rename")) {
+
+    static auto text = ICON_FA_PEN " Rename";
+    if (ImGui::Button(text, ImVec2(itemWidth, 0))) {
       selectedObject->SetName(renameGameObjectBuffer);
     }
-    if (ImGui::Button("Delete")) {
+
+    static auto delete_text = ICON_FA_TRASH " Delete";
+    if (ImGui::Button(delete_text, ImVec2(itemWidth, 0))) {
       scene->RemoveGameObject(selectedObject);
       selectedObject = nullptr;
     }
+
     ImGui::Unindent();
   }
 
@@ -367,16 +357,54 @@ void Manager::inspector(Jenjin::Scene *scene) {
 }
 
 void Manager::explorer(Jenjin::Scene *scene) {
-  ImGui::Begin("Explorer");
+  static auto title = ICON_FA_FOLDER " Explorer";
+  ImGui::Begin(title);
 
   for (auto file :
        std::filesystem::directory_iterator(this->paths.projectPath)) {
     if (file.is_directory()) {
+      bool shouldBeOpenByDefault =
+          file.path().filename().string() == "textures";
       if (ImGui::TreeNode(file.path().filename().string().c_str())) {
         for (auto subfile : std::filesystem::directory_iterator(file.path())) {
           if (subfile.is_regular_file()) {
-            ImGui::Selectable(
-                fmt::format("{}", subfile.path().filename().string()).c_str());
+            auto ext = subfile.path().extension();
+
+            if (ext == ".jenscene") {
+              auto scene_text = fmt::format("{} {}", ICON_FA_CUBE,
+                                            subfile.path().filename().string());
+              if (ImGui::Selectable(scene_text.c_str())) {
+                scene->Load(subfile.path().string());
+              }
+            } else if (ext == ".lua") {
+              auto script_text =
+                  fmt::format("{} {}", ICON_FA_FILE_CODE,
+                              subfile.path().filename().string());
+              if (ImGui::Selectable(script_text.c_str())) {
+                scene->GetLuaManager()->ReloadScripts(this->paths.projectPath +
+                                                      "/scripts/");
+                scene->GetLuaManager()->Ready();
+              }
+            } else if (ext == ".png" || ext == ".jpg") {
+              auto texture_text = fmt::format(
+                  "{} {}", ICON_FA_IMAGE, subfile.path().filename().string());
+              if (ImGui::Selectable(texture_text.c_str())) {
+                if (selectedObject) {
+                  scene->SetGameObjectTexture(selectedObject,
+                                              subfile.path().string());
+                } else {
+                  spdlog::warn("No object selected");
+
+                  // TODO: Notificaiton system
+                }
+              }
+            } else {
+              auto file_text = fmt::format("{} {}", ICON_FA_FILE,
+                                           subfile.path().filename().string());
+              if (ImGui::Selectable(file_text.c_str())) {
+                spdlog::warn("No handler for file type: {}", ext.string());
+              }
+            }
           }
         }
         ImGui::TreePop();
@@ -502,8 +530,10 @@ void Manager::welcome() {
            Jenjin::Editor::get_jendir() + "/Projects")) {
     if (file.is_directory()) {
       bool isSelected = selectedPreExisting == file.path().filename().string();
-      if (ImGui::Selectable(file.path().filename().string().c_str(), isSelected,
-                            ImGuiSelectableFlags_None,
+      const auto text =
+          fmt::format("{} {}", ICON_FA_FOLDER, file.path().filename().string());
+
+      if (ImGui::Selectable(text.c_str(), isSelected, ImGuiSelectableFlags_None,
                             ImVec2(ImGui::GetWindowWidth() -
                                        ImGui::GetStyle().WindowPadding.x * 2,
                                    0))) {
@@ -532,21 +562,24 @@ void Manager::welcome() {
                           ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
   }
 
-  if (ImGui::Button("Open Project") && !selectedPreExisting.empty()) {
+  static auto open_project_text = ICON_FA_FOLDER_OPEN " Open Project";
+  if (ImGui::Button(open_project_text) && !selectedPreExisting.empty()) {
     open_project();
   }
+
   if (selectedPreExisting.empty())
     ImGui::PopStyleColor(3);
 
   ImGui::SameLine();
 
-  if (ImGui::Button("New Project")) {
+  static auto new_project_text = ICON_FA_FOLDER_PLUS " New Project";
+  if (ImGui::Button(new_project_text)) {
     ImGui::OpenPopup("New Project");
   }
 
   ImGui::SameLine();
 
-  auto text = "Delete";
+  static auto text = ICON_FA_TRASH " Delete Project";
   auto width = ImGui::CalcTextSize(text).x;
   ImGui::SetCursorPosX(ImGui::GetWindowWidth() - width -
                        ImGui::GetStyle().WindowPadding.x -

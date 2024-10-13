@@ -8,6 +8,13 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <IconsFontAwesome6.h>
+
+#define LEFT_RIGHT ICON_FA_ARROWS_LEFT_RIGHT
+#define UP_DOWN ICON_FA_ARROWS_UP_DOWN
+
+#define ROTATE ICON_FA_ARROWS_SPIN
+
 using namespace Jenjin::Editor;
 
 static void drawButtonWithDrag(const std::string &buttonLabel,
@@ -59,6 +66,9 @@ bool Widgets::transformWidget(Jenjin::GameObject::Transform *transform) {
       GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
   ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
+	static auto left_right_title = LEFT_RIGHT;
+	static auto up_down_title = UP_DOWN;
+
   start_widget("Position");
   drawButtonWithDrag("X", "##X", transform->position.x,
                      ImVec4{0.6f, 0.2f, 0.2f, 1.0f},
@@ -72,19 +82,20 @@ bool Widgets::transformWidget(Jenjin::GameObject::Transform *transform) {
   end_widget();
 
   start_widget("Scale");
-  drawButtonWithDrag("W", "##ScaleW", transform->scale.x,
+  drawButtonWithDrag(left_right_title, "##ScaleW", transform->scale.x,
                      ImVec4{0.6f, 0.2f, 0.2f, 1.0f},
                      ImVec4{0.7f, 0.3f, 0.3f, 1.0f},
                      ImVec4{0.6f, 0.2f, 0.2f, 1.0f}, buttonSize, 1);
 
-  drawButtonWithDrag("H", "##ScaleH", transform->scale.y,
+  drawButtonWithDrag(up_down_title, "##ScaleH", transform->scale.y,
                      ImVec4{0.3f, 0.6f, 0.3f, 1.0f},
                      ImVec4{0.4f, 0.7f, 0.4f, 1.0f},
                      ImVec4{0.3f, 0.6f, 0.3f, 1.0f}, buttonSize, 1);
   end_widget();
 
+	static auto rotation_title = ROTATE;
   start_widget("Rotation", 1);
-  drawButtonWithDrag("Z", "##Rotation", transform->rotation,
+  drawButtonWithDrag(rotation_title, "##Rotation", transform->rotation,
                      ImVec4{0.3f, 0.4f, 0.7f, 1.0f},
                      ImVec4{0.4f, 0.5f, 0.8f, 1.0f},
                      ImVec4{0.3f, 0.4f, 0.7f, 1.0f}, buttonSize);
