@@ -30,18 +30,18 @@ Manager::Manager() {}
 void Manager::menu() {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
-      if (!this->paths.projectPath.empty()) {
+      if (this->hasProjectOpen) {
         if (ImGui::MenuItem("New Scene")) {
           auto scene = std::make_shared<Jenjin::Scene>();
           Jenjin::EngineRef->AddScene(scene, true);
         }
 
         if (ImGui::MenuItem("Open Scene")) {
-          Jenjin::EngineRef->GetCurrentScene()->Load(this->paths.openScenePath);
+          Jenjin::EngineRef->GetCurrentScene()->Load("main.jenscene");
         }
 
         if (ImGui::MenuItem("Save Scene")) {
-          Jenjin::EngineRef->GetCurrentScene()->Save(this->paths.openScenePath);
+          Jenjin::EngineRef->GetCurrentScene()->Save("main.jenscene");
         }
       }
 
@@ -52,13 +52,13 @@ void Manager::menu() {
       ImGui::EndMenu();
     }
 
-    if (!this->paths.openScenePath.empty()) {
+    if (this->hasProjectOpen) {
       if (ImGui::BeginMenu("Scripts")) {
         if (ImGui::MenuItem("Reload")) {
           auto luaManager =
               Jenjin::EngineRef->GetCurrentScene()->GetLuaManager();
 
-          luaManager->ReloadScripts(this->paths.projectPath + "/scripts/");
+          luaManager->ReloadScripts("scripts/");
           luaManager->Ready();
         }
 
@@ -72,17 +72,16 @@ void Manager::menu() {
           auto scene = Jenjin::EngineRef->GetCurrentScene();
 
           if (this->running) {
-            scene->Save(this->paths.liveScenePath);
+            scene->Save("live.jenscene");
 
             Jenjin::EngineRef->GetCurrentScene()
                 ->GetLuaManager()
-                ->LoadDirectory(
-                    (this->paths.projectPath + "/scripts/").c_str());
+                ->LoadDirectory(("scripts/"));
 
             spdlog::info("Readying lua manager");
             scene->GetLuaManager()->Ready();
           } else {
-            scene->Load(this->paths.liveScenePath);
+            scene->Load("live.jenscene");
           }
         }
 
@@ -90,7 +89,7 @@ void Manager::menu() {
       }
     }
 
-    auto toDisplay = this->paths.openScenePath;
+    auto toDisplay = fmt::format("FPS: {:.2f}", ImGui::GetIO().Framerate);
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() -
                          ImGui::CalcTextSize(toDisplay.c_str()).x - 10);
     ImGui::Text("%s", toDisplay.c_str());
@@ -251,6 +250,11 @@ void Manager::hierarchy(Jenjin::Scene *scene) {
     }
   }
 
+	// Autoscroll if the user goes to the bottom
+	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+		ImGui::SetScrollHereY(1.0f);
+	}
+
   ImGui::End();
 }
 
@@ -360,8 +364,7 @@ void Manager::explorer(Jenjin::Scene *scene) {
   static auto title = ICON_FA_FOLDER " Explorer";
   ImGui::Begin(title);
 
-  for (auto file :
-       std::filesystem::directory_iterator(this->paths.projectPath)) {
+  for (auto file : std::filesystem::directory_iterator(".")) {
     if (file.is_directory()) {
       bool shouldBeOpenByDefault =
           file.path().filename().string() == "textures";
@@ -381,8 +384,7 @@ void Manager::explorer(Jenjin::Scene *scene) {
                   fmt::format("{} {}", ICON_FA_FILE_CODE,
                               subfile.path().filename().string());
               if (ImGui::Selectable(script_text.c_str())) {
-                scene->GetLuaManager()->ReloadScripts(this->paths.projectPath +
-                                                      "/scripts/");
+                scene->GetLuaManager()->ReloadScripts("scripts/");
                 scene->GetLuaManager()->Ready();
               }
             } else if (ext == ".png" || ext == ".jpg") {
@@ -436,7 +438,7 @@ void Manager::backup_prompts(Jenjin::Scene *scene) {
     ImGui::Separator();
 
     if (ImGui::Button("Save and Exit")) {
-      Jenjin::EngineRef->GetCurrentScene()->Save(this->paths.openScenePath);
+      Jenjin::EngineRef->GetCurrentScene()->Save("main.jenscene");
       glfwSetWindowShouldClose(glfwGetCurrentContext(), GLFW_TRUE);
     }
 
@@ -472,7 +474,7 @@ void Manager::show_all(Jenjin::Scene *scene) {
     ImGui::PushStyleColor(ImGuiCol_TitleBgActive, red_bg);
   }
 
-  if (this->paths.projectPath.empty()) {
+  if (!this->hasProjectOpen) {
     menu();
     dockspace();
     welcome();
@@ -513,17 +515,16 @@ void Manager::welcome() {
   auto open_project = [&]() {
     auto file = std::string(selectedPreExisting);
     auto jendir = Jenjin::Editor::get_jendir();
-    this->paths.projectPath = jendir + "/Projects/" + file;
-    this->paths.openScenePath = jendir + "/Projects/" + file + "/main.jenscene";
-    this->paths.liveScenePath = jendir + "/Projects/" + file + "/live.jenscene";
+    this->hasProjectOpen = true;
 
-    Jenjin::EngineRef->GetCurrentScene()->GetGameObjects()->clear();
-    std::ifstream ifile(this->paths.openScenePath);
-    Jenjin::EngineRef->GetCurrentScene()->Load(this->paths.openScenePath);
+    std::filesystem::current_path(jendir + "/Projects/" + file);
+    spdlog::info("Changed cwd to {}", std::filesystem::current_path().string());
+
+    Jenjin::EngineRef->GetCurrentScene()->Load("main.jenscene");
 
     // Load all the lua files
     Jenjin::EngineRef->GetCurrentScene()->GetLuaManager()->LoadDirectory(
-        (this->paths.projectPath + "/scripts/").c_str());
+        "scripts/");
   };
 
   for (auto file : std::filesystem::directory_iterator(
@@ -601,11 +602,13 @@ void Manager::welcome() {
       Jenjin::Editor::ensure_dir(projectPath + "/scripts");
       Jenjin::Editor::ensure_dir(projectPath + "/textures");
 
-      this->paths.projectPath = projectPath;
-      this->paths.openScenePath = projectPath + "/main.jenscene";
-      this->paths.liveScenePath = projectPath + "/live.jenscene";
+      this->hasProjectOpen = true;
+      std::filesystem::current_path(projectPath);
+      spdlog::info("Changed cwd to {}",
+                   std::filesystem::current_path().string());
+
       Jenjin::EngineRef->GetCurrentScene()->GetGameObjects()->clear();
-      Jenjin::EngineRef->GetCurrentScene()->Save(this->paths.openScenePath);
+      Jenjin::EngineRef->GetCurrentScene()->Save("main.jenscene");
       ImGui::CloseCurrentPopup();
     }
     ImGui::SameLine();

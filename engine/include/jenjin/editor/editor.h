@@ -28,12 +28,7 @@ public:
 
   void show_all(Jenjin::Scene *scene);
 
-  struct {
-    std::string projectPath;
-    std::string openScenePath;
-    std::string liveScenePath;
-    std::string scriptsPath;
-  } paths;
+	bool hasProjectOpen = false;
 
 private:
   Jenjin::GameObject *selectedObject = nullptr;

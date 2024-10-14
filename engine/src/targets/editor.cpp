@@ -8,8 +8,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <IconsFontAwesome6.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -50,13 +50,14 @@ void EditorTarget::PreRender() {
 void EditorTarget::Render() {
   renderTexture.Unbind();
 
-  if (this->editor.paths.openScenePath.empty()) {
+  if (!this->editor.hasProjectOpen) {
     return;
   }
 
-	static auto title = VIEWPORT_TITLE;
+  static auto title = VIEWPORT_TITLE;
   ImGui::Begin(title, nullptr,
-							 ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+               ImGuiWindowFlags_NoScrollbar |
+                   ImGuiWindowFlags_NoScrollWithMouse);
 
   ImVec2 size = ImGui::GetContentRegionAvail();
   this->width = size.x;
@@ -100,7 +101,8 @@ glm::vec2 EditorTarget::GetMousePosition() {
   static double gx, gy;
   glfwGetCursorPos(ctx, &gx, &gy);
 
-  auto v = ImGui::GetWindowPos(); // HACK: This is wrong!!! It doesn't get the viewport window pos.
+  auto v = ImGui::GetWindowPos(); // HACK: This is wrong!!! It doesn't get the
+                                  // viewport window pos.
   auto lx = gx - v.x;
   auto ly = gy - v.y;
 

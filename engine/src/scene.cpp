@@ -201,8 +201,17 @@ void Scene::Save(std::ofstream &file) {
                         .name = {0}};
 
     strncpy(gobj.name, go->name.c_str(), sizeof(gobj.name));
-    strncpy(gobj.texturePath, go->texturePath.c_str(),
-            sizeof(gobj.texturePath));
+    auto path = go->texturePath;
+    auto pos = path.find("textures/");
+    if (pos != std::string::npos) {
+      const char *text = path.c_str() + pos;
+      spdlog::debug("Texture path is in the textures directory: {}", text);
+      strncpy(gobj.texturePath, text, sizeof(gobj.texturePath));
+    } else {
+      spdlog::warn("Texture path is not in the textures directory: {}", path);
+      strncpy(gobj.texturePath, path.c_str(), sizeof(gobj.texturePath));
+    }
+
     gobj.name[sizeof(gobj.name) - 1] = 0;
     gobj.texturePath[sizeof(gobj.texturePath) - 1] = 0;
 
@@ -220,10 +229,18 @@ void Scene::Load(const std::string &path) {
 void Scene::Load(std::ifstream &file) {
   spdlog::trace("Scene::Load({})", (void *)&file);
 
+	file.seekg(0, std::ios::end);
+	int size = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	spdlog::debug("File size: {}", size);
+
   this->gameObjects.clear();
 
   for (GOBJSAVABLE gobj;
        file.read(reinterpret_cast<char *>(&gobj), sizeof(GOBJSAVABLE));) {
+    spdlog::debug("Reading GOBJSAVABLE from file");
+
     auto go = std::make_shared<GameObject>(
         gobj.name, Jenjin::Helpers::CreateQuad(2.0f, 2.0f));
     go->transform = gobj.transform;
