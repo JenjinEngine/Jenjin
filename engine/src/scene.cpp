@@ -91,18 +91,22 @@ void Scene::Build() {
     gameObject->meshReferenceID = this->meshReferences.size() - 1;
   }
 
-  spdlog::debug("Built {} mesh references... now generating buffers",
+  spdlog::debug("Built {} mesh references... now updating buffers",
                 this->meshReferences.size());
 
-  glGenVertexArrays(1, &vao);
+	if (vao == 0 || vbo == 0 || ebo == 0) {
+		spdlog::debug("Generating new buffers");
+		glGenVertexArrays(1, &vao);
+		glGenBuffers(1, &vbo);
+		glGenBuffers(1, &ebo);
+	}
+
   glBindVertexArray(vao);
 
-  glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
                vertices.data(), GL_STATIC_DRAW);
 
-  glGenBuffers(1, &ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
                indices.data(), GL_STATIC_DRAW);
