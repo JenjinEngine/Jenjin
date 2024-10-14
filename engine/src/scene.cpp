@@ -70,8 +70,24 @@ void Scene::Build() {
   this->meshReferences.clear();
   this->meshReferences.reserve(gameObjects.size());
 
+  // Clear out any old data
+  this->meshReferences.clear();
+  this->meshReferences.reserve(gameObjects.size());
+
+  // Preallocate vectors with appropriate sizes
   std::vector<Vertex> vertices;
-  std::vector<unsigned int> indices;
+  std::vector<GLuint> indices;
+
+  // Reserve enough space in vertices/indices to avoid resizing during
+  // emplace_back
+  size_t totalVertices = 0;
+  size_t totalIndices = 0;
+  for (const auto &gameObject : gameObjects) {
+    totalVertices += gameObject->mesh.vertices.size();
+    totalIndices += gameObject->mesh.indices.size();
+  }
+  vertices.reserve(totalVertices);
+  indices.reserve(totalIndices);
 
   for (auto &gameObject : gameObjects) {
     int baseVertex = vertices.size();
@@ -81,12 +97,16 @@ void Scene::Build() {
     std::vector<GLuint> &meshIndices = gameObject->mesh.indices;
 
     MeshReference meshReference = {baseVertex, baseIndex,
-                                   (int)meshIndices.size(),
-                                   (int)meshVertices.size()};
+                                   static_cast<int>(meshIndices.size()),
+                                   static_cast<int>(meshVertices.size())};
     this->meshReferences.emplace_back(meshReference);
 
-    vertices.insert(vertices.end(), meshVertices.begin(), meshVertices.end());
-    indices.insert(indices.end(), meshIndices.begin(), meshIndices.end());
+    // Insert vertices and indices directly into preallocated vectors
+    vertices.insert(vertices.end(),
+                    std::make_move_iterator(meshVertices.begin()),
+                    std::make_move_iterator(meshVertices.end()));
+    indices.insert(indices.end(), std::make_move_iterator(meshIndices.begin()),
+                   std::make_move_iterator(meshIndices.end()));
 
     gameObject->meshReferenceID = this->meshReferences.size() - 1;
   }
@@ -94,12 +114,12 @@ void Scene::Build() {
   spdlog::debug("Built {} mesh references... now updating buffers",
                 this->meshReferences.size());
 
-	if (vao == 0 || vbo == 0 || ebo == 0) {
-		spdlog::debug("Generating new buffers");
-		glGenVertexArrays(1, &vao);
-		glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ebo);
-	}
+  if (vao == 0 || vbo == 0 || ebo == 0) {
+    spdlog::debug("Generating new buffers");
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+  }
 
   glBindVertexArray(vao);
 
@@ -233,11 +253,11 @@ void Scene::Load(const std::string &path) {
 void Scene::Load(std::ifstream &file) {
   spdlog::trace("Scene::Load({})", (void *)&file);
 
-	file.seekg(0, std::ios::end);
-	int size = file.tellg();
-	file.seekg(0, std::ios::beg);
+  file.seekg(0, std::ios::end);
+  int size = file.tellg();
+  file.seekg(0, std::ios::beg);
 
-	spdlog::debug("File size: {}", size);
+  spdlog::debug("File size: {}", size);
 
   this->gameObjects.clear();
 
