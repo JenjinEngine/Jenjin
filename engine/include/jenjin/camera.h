@@ -4,6 +4,7 @@
 
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Jenjin {
 // 2D Orthographic Camera
@@ -34,15 +35,22 @@ public:
   glm::vec3 *GetPositionPointer() { return &position; }
   float *GetZoomPointer() { return &zoom; }
   float *GetRotationPointer() { return &rotation; }
+  glm::vec3 *GetBackgroundPointer() { return &background; }
+
+  glm::mat4 *GetProjetionPointer() { return &this->projection; }
+
+  glm::vec2 size;
 
 private:
   Shader *shader;
 
-  glm::vec3 position;
+  glm::vec3 position = glm::vec3(0, 0, 0);
   float rotation;
   float zoom;
 
   glm::mat4 projection;
   glm::mat4 view;
+
+  glm::vec3 background = glm::vec3(0.15, 0.15, 0.15);
 };
 } // namespace Jenjin

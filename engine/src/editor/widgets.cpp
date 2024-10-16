@@ -2,6 +2,7 @@
 
 #include "jenjin/editor/widgets.h"
 #include "jenjin/gameobject.h"
+#include "jenjin/camera.h"
 
 #include <glm/glm.hpp>
 
@@ -18,7 +19,7 @@
 using namespace Jenjin::Editor;
 
 static void drawButtonWithDrag(const std::string &buttonLabel,
-                               const std::string &dragLabel, float &value,
+                               const std::string &dragLabel, float *value,
                                const ImVec4 &buttonColor,
                                const ImVec4 &buttonHoveredColor,
                                const ImVec4 &buttonActiveColor,
@@ -29,12 +30,12 @@ static void drawButtonWithDrag(const std::string &buttonLabel,
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonActiveColor);
 
   if (ImGui::Button(buttonLabel.c_str(), buttonSize))
-    value = defaultValue;
+    *value = defaultValue;
 
   ImGui::PopStyleColor(3);
 
   ImGui::SameLine();
-  ImGui::DragFloat(dragLabel.c_str(), &value, 0.1f, 0.0f, 0.0f, "%.2f");
+  ImGui::DragFloat(dragLabel.c_str(), value, 0.1f, 0.0f, 0.0f, "%.2f");
   ImGui::PopItemWidth();
   ImGui::SameLine();
 }
@@ -61,7 +62,7 @@ static void end_widget() {
   ImGui::PopID();
 }
 
-bool Widgets::transformWidget(Jenjin::GameObject::Transform *transform) {
+void Widgets::transformWidget(Jenjin::GameObject::Transform *transform) {
   float lineHeight =
       GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
   ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
@@ -70,24 +71,24 @@ bool Widgets::transformWidget(Jenjin::GameObject::Transform *transform) {
 	static auto up_down_title = UP_DOWN;
 
   start_widget("Position");
-  drawButtonWithDrag("X", "##X", transform->position.x,
+  drawButtonWithDrag("X", "##X", &transform->position.x,
                      ImVec4{0.6f, 0.2f, 0.2f, 1.0f},
                      ImVec4{0.7f, 0.3f, 0.3f, 1.0f},
                      ImVec4{0.6f, 0.2f, 0.2f, 1.0f}, buttonSize);
 
-  drawButtonWithDrag("Y", "##Y", transform->position.y,
+  drawButtonWithDrag("Y", "##Y", &transform->position.y,
                      ImVec4{0.3f, 0.6f, 0.3f, 1.0f},
                      ImVec4{0.4f, 0.7f, 0.4f, 1.0f},
                      ImVec4{0.3f, 0.6f, 0.3f, 1.0f}, buttonSize);
   end_widget();
 
   start_widget("Scale");
-  drawButtonWithDrag(left_right_title, "##ScaleW", transform->scale.x,
+  drawButtonWithDrag(left_right_title, "##ScaleW", &transform->scale.x,
                      ImVec4{0.6f, 0.2f, 0.2f, 1.0f},
                      ImVec4{0.7f, 0.3f, 0.3f, 1.0f},
                      ImVec4{0.6f, 0.2f, 0.2f, 1.0f}, buttonSize, 1);
 
-  drawButtonWithDrag(up_down_title, "##ScaleH", transform->scale.y,
+  drawButtonWithDrag(up_down_title, "##ScaleH", &transform->scale.y,
                      ImVec4{0.3f, 0.6f, 0.3f, 1.0f},
                      ImVec4{0.4f, 0.7f, 0.4f, 1.0f},
                      ImVec4{0.3f, 0.6f, 0.3f, 1.0f}, buttonSize, 1);
@@ -95,11 +96,43 @@ bool Widgets::transformWidget(Jenjin::GameObject::Transform *transform) {
 
 	static auto rotation_title = ROTATE;
   start_widget("Rotation", 1);
-  drawButtonWithDrag(rotation_title, "##Rotation", transform->rotation,
+  drawButtonWithDrag(rotation_title, "##Rotation", &transform->rotation,
                      ImVec4{0.3f, 0.4f, 0.7f, 1.0f},
                      ImVec4{0.4f, 0.5f, 0.8f, 1.0f},
                      ImVec4{0.3f, 0.4f, 0.7f, 1.0f}, buttonSize);
   end_widget();
+}
 
-  return false;
+void Widgets::cameraWidget(Jenjin::Camera *camera) {
+	float lineHeight =
+			GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
+
+	start_widget("Position");
+	drawButtonWithDrag("X", "##X", &camera->GetPositionPointer()->x,
+										 ImVec4{0.6f, 0.2f, 0.2f, 1.0f},
+										 ImVec4{0.7f, 0.3f, 0.3f, 1.0f},
+										 ImVec4{0.6f, 0.2f, 0.2f, 1.0f}, buttonSize);
+
+	drawButtonWithDrag("Y", "##Y", &camera->GetPositionPointer()->y,
+										 ImVec4{0.3f, 0.6f, 0.3f, 1.0f},
+										 ImVec4{0.4f, 0.7f, 0.4f, 1.0f},
+										 ImVec4{0.3f, 0.6f, 0.3f, 1.0f}, buttonSize);
+	end_widget();
+
+	start_widget("Rotation", 1);
+	static auto rotation_title = ROTATE;
+	drawButtonWithDrag(rotation_title, "##Rotation", camera->GetRotationPointer(),
+										 ImVec4{0.3f, 0.4f, 0.7f, 1.0f},
+										 ImVec4{0.4f, 0.5f, 0.8f, 1.0f},
+										 ImVec4{0.3f, 0.4f, 0.7f, 1.0f}, buttonSize);
+	end_widget();
+
+	start_widget("Zoom", 1);
+	auto zoom_title = *camera->GetZoomPointer() < 1.0f ? ICON_FA_COMPRESS : ICON_FA_EXPAND;
+	drawButtonWithDrag(zoom_title, "##Zoom", camera->GetZoomPointer(),
+										 ImVec4{0.3f, 0.4f, 0.7f, 1.0f},
+										 ImVec4{0.4f, 0.5f, 0.8f, 1.0f},
+										 ImVec4{0.3f, 0.4f, 0.7f, 1.0f}, buttonSize);
+	end_widget();
 }

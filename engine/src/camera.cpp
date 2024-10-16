@@ -24,6 +24,8 @@ Camera::Camera(Shader *shader, glm::vec2 size) : shader(shader) {
 }
 
 void Camera::Resize(glm::vec2 size) {
+	this->size = size;
+
   float aspectRatio = size.x / size.y;
   float inverseZoom =
       1.0f /
@@ -35,7 +37,6 @@ void Camera::Resize(glm::vec2 size) {
 }
 
 void Camera::Update() {
-  // include rotation
   view =
       glm::translate(glm::mat4(1.0f), -position) *
       glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 0, 1));

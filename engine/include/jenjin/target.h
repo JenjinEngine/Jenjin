@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <imgui.h>
 
 namespace Jenjin {
 // A "Target" is somewhere for the engine to render to. This class is completely
@@ -23,6 +24,9 @@ public:
 
   // Get the mouse position
   virtual glm::vec2 GetMousePosition() { return glm::vec2(-1, -1); };
+
+	// Set the window position (information) usually used for the editor
+	virtual void SetWindowPosition(ImVec2) {};
 
   // Does the target respond to events of the window resizing
   virtual bool RespondsToWindowResize() { return true; };

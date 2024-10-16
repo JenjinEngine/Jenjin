@@ -13,12 +13,15 @@ Come back later, sorry! Jenjin is not ready for real usage.
 - [x] Scripting (Lua)
 - [x] Transparency on sprites
 - [x] Icons everywhere
-- [ ] Code editor in the editor
+- [x] Code editor in the editor
+- [ ] Autocompletion in the editor
 - [ ] Dynamic data attached to game objects at runtime
 - [ ] Hierarchy and `.Parent` in Lua along with `workspace` (e.g. `Workspace.MyGameObject.Parent` == `Workspace`)
 
 ## TODO (Future)
 - [ ] Serialization/Deserialization of scenes to better formats
+- [ ] Syntax highlighting in the editor
+- [ ] Sprite animations
 - [ ] Scripting (Python)
 - [ ] Physics engine
 - [ ] Instancing

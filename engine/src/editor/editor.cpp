@@ -18,10 +18,13 @@
 #include <IconsFontAwesome6.h>
 
 #include <filesystem>
-#include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
+
+static char codeBuffer[1024 * 16] = {0};
+
+static char codeFile[260];
 
 using namespace Jenjin::Editor;
 
@@ -159,11 +162,49 @@ void Manager::dockspace() {
     static auto inspector_title = ICON_FA_EYE " Inspector";
     ImGui::DockBuilderDockWindow(inspector_title, dock_right);
 
+    static auto code_title = ICON_FA_CODE " Code";
+    ImGui::DockBuilderDockWindow(code_title, middle);
+
     static auto viewport_title = ICON_FA_VIDEO " Viewport";
     ImGui::DockBuilderDockWindow(viewport_title, middle);
 
     ImGui::DockBuilderFinish(dockspace_id);
   }
+
+  ImGui::End();
+}
+
+void Manager::viewport(Jenjin::Scene *scene) {
+  static auto title = ICON_FA_VIDEO " Viewport";
+  ImGui::Begin(title, nullptr,
+               ImGuiWindowFlags_NoScrollbar |
+                   ImGuiWindowFlags_NoScrollWithMouse);
+
+  ImVec2 size = ImGui::GetContentRegionAvail();
+  static auto target = Jenjin::EngineRef->GetCurrentScene()->GetTarget();
+  target->Resize(reinterpret_cast<glm::vec2 &>(size));
+
+  if (renderTexture == -1) {
+    ImGui::GetWindowDrawList()->AddText(ImGui::GetCursorScreenPos(),
+                                        ImColor(255, 255, 255, 255),
+                                        "No render target");
+    ImGui::End();
+
+    return;
+  }
+
+  ImGui::GetWindowDrawList()->AddImage(
+      (void *)(intptr_t)renderTexture, ImVec2(ImGui::GetCursorScreenPos()),
+      ImVec2(ImGui::GetCursorScreenPos().x + size.x,
+             ImGui::GetCursorScreenPos().y + size.y),
+      ImVec2(0, 1), ImVec2(1, 0));
+
+  std::string res_text =
+      std::to_string((int)size.x) + "x" + std::to_string((int)size.y);
+  ImGui::GetWindowDrawList()->AddText(
+      ImVec2(ImGui::GetCursorScreenPos().x + 10,
+             ImGui::GetCursorScreenPos().y + 10),
+      ImColor(255, 255, 255, 255), res_text.c_str());
 
   ImGui::End();
 }
@@ -250,10 +291,10 @@ void Manager::hierarchy(Jenjin::Scene *scene) {
     }
   }
 
-	// Autoscroll if the user goes to the bottom
-	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-		ImGui::SetScrollHereY(1.0f);
-	}
+  // Autoscroll if the user goes to the bottom
+  if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+    ImGui::SetScrollHereY(1.0f);
+  }
 
   ImGui::End();
 }
@@ -268,91 +309,67 @@ void Manager::inspector(Jenjin::Scene *scene) {
   ImGui::Begin(title);
 
   if (selectedCamera) {
-    ImGui::Text("Camera");
-    ImGui::Separator();
-    ImGui::Indent();
-
-    ImGui::Text("Projection");
-    ImGui::Separator();
-    ImGui::Indent();
-
-    ImGui::DragFloat("Zoom", scene->GetCamera()->GetZoomPointer(), 0.01f, 0.01f,
-                     1000.0f);
-
-    ImGui::Unindent();
-
-    ImGui::Text("Position");
-    ImGui::Separator();
-    ImGui::Indent();
-
-    ImGui::DragFloat2("Position",
-                      glm::value_ptr(*scene->GetCamera()->GetPositionPointer()),
-                      0.1f);
-    ImGui::DragFloat("Rotation", scene->GetCamera()->GetRotationPointer(),
-                     0.1f);
-
-    ImGui::Unindent();
-
-    ImGui::Text("%s", appearance_title);
-    ImGui::Separator();
-    ImGui::Indent();
-
-    ImGui::Text("Color here...");
-
-    ImGui::Unindent();
-
-    ImGui::Unindent();
-    ImGui::End();
-    return;
-  }
-
-  if (selectedObject == nullptr) {
-    ImGui::Text("No object selected");
-    ImGui::End();
-
-    return;
-  }
-
-  static auto transform_title = ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform";
-  if (ImGui::CollapsingHeader(transform_title,
-                              ImGuiTreeNodeFlags_DefaultOpen)) {
-    ImGui::Indent();
-    Jenjin::Editor::Widgets::transformWidget(&selectedObject->transform);
-    ImGui::Unindent();
-  }
-
-  ImGui::ItemSize(ImVec2(0, 10));
-
-  if (ImGui::CollapsingHeader(appearance_title)) {
-    ImGui::Indent();
-    ImGui::ColorPicker3("Color", glm::value_ptr(selectedObject->color));
-    ImGui::Unindent();
-  }
-
-  ImGui::ItemSize(ImVec2(0, 10));
-
-  static auto manage_title = ICON_FA_JAR " Manage";
-  if (ImGui::CollapsingHeader(manage_title, ImGuiTreeNodeFlags_DefaultOpen)) {
-    ImGui::Indent();
-
-    float itemWidth = ImGui::GetContentRegionAvail().x;
-
-    ImGui::SetNextItemWidth(itemWidth);
-    ImGui::InputText("##RenameInput", renameGameObjectBuffer,
-                     sizeof(renameGameObjectBuffer));
-
-    static auto text = ICON_FA_PEN " Rename";
-    if (ImGui::Button(text, ImVec2(itemWidth, 0))) {
-      selectedObject->SetName(renameGameObjectBuffer);
+    static auto transform_title =
+        ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform";
+    if (ImGui::CollapsingHeader(transform_title,
+                                ImGuiTreeNodeFlags_DefaultOpen)) {
+      ImGui::Indent();
+      Jenjin::Editor::Widgets::cameraWidget(scene->GetCamera());
+      ImGui::Unindent();
     }
 
-    static auto delete_text = ICON_FA_TRASH " Delete";
-    if (ImGui::Button(delete_text, ImVec2(itemWidth, 0))) {
-      scene->RemoveGameObject(selectedObject);
-      selectedObject = nullptr;
+    if (ImGui::CollapsingHeader(appearance_title)) {
+      ImGui::Indent();
+      ImGui::ColorPicker3(
+          "Background",
+          glm::value_ptr(*scene->GetCamera()->GetBackgroundPointer()));
+      ImGui::Unindent();
+    }
+  }
+
+  if (selectedObject) {
+    static auto transform_title =
+        ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform";
+    if (ImGui::CollapsingHeader(transform_title,
+                                ImGuiTreeNodeFlags_DefaultOpen)) {
+      ImGui::Indent();
+      Jenjin::Editor::Widgets::transformWidget(&selectedObject->transform);
+      ImGui::Unindent();
     }
 
-    ImGui::Unindent();
+    ImGui::ItemSize(ImVec2(0, 10));
+
+    if (ImGui::CollapsingHeader(appearance_title)) {
+      ImGui::Indent();
+      ImGui::ColorPicker3("Color", glm::value_ptr(selectedObject->color));
+      ImGui::Unindent();
+    }
+
+    ImGui::ItemSize(ImVec2(0, 10));
+
+    static auto manage_title = ICON_FA_JAR " Manage";
+    if (ImGui::CollapsingHeader(manage_title, ImGuiTreeNodeFlags_DefaultOpen)) {
+      ImGui::Indent();
+
+      float itemWidth = ImGui::GetContentRegionAvail().x;
+
+      ImGui::SetNextItemWidth(itemWidth);
+      ImGui::InputText("##RenameInput", renameGameObjectBuffer,
+                       sizeof(renameGameObjectBuffer));
+
+      static auto text = ICON_FA_PEN " Rename";
+      if (ImGui::Button(text, ImVec2(itemWidth, 0))) {
+        selectedObject->SetName(renameGameObjectBuffer);
+      }
+
+      static auto delete_text = ICON_FA_TRASH " Delete";
+      if (ImGui::Button(delete_text, ImVec2(itemWidth, 0))) {
+        scene->RemoveGameObject(selectedObject);
+        selectedObject = nullptr;
+      }
+
+      ImGui::Unindent();
+    }
   }
 
   ImGui::Unindent();
@@ -384,8 +401,20 @@ void Manager::explorer(Jenjin::Scene *scene) {
                   fmt::format("{} {}", ICON_FA_FILE_CODE,
                               subfile.path().filename().string());
               if (ImGui::Selectable(script_text.c_str())) {
-                scene->GetLuaManager()->ReloadScripts("scripts/");
-                scene->GetLuaManager()->Ready();
+                std::ifstream file(subfile.path().string());
+                if (file.is_open()) {
+                  const std::string script =
+                      std::string(std::istreambuf_iterator<char>(file),
+                                  std::istreambuf_iterator<char>());
+
+                  memcpy(codeBuffer, script.c_str(), script.size());
+                  codeBuffer[script.size()] = '\0';
+                }
+                file.close();
+
+                memcpy(codeFile, subfile.path().string().c_str(),
+                       subfile.path().string().length());
+                codeFile[strlen(subfile.path().string().c_str())] = '\0';
               }
             } else if (ext == ".png" || ext == ".jpg") {
               auto texture_text = fmt::format(
@@ -458,7 +487,60 @@ void Manager::backup_prompts(Jenjin::Scene *scene) {
   }
 }
 
-void Manager::code(Jenjin::Scene *scene) {}
+void Manager::code(Jenjin::Scene *scene) {
+  static auto title = ICON_FA_CODE " Code";
+  static bool showUnsaved = false;
+
+  ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
+  if (showUnsaved)
+    flags |= ImGuiWindowFlags_UnsavedDocument;
+
+	// TODO: Tabs at the top for each file (NOTE: This should probably be a class once this is implemented)
+  ImGui::Begin(title, nullptr, flags);
+
+  static auto save = [&]() {
+    std::ofstream file(codeFile);
+    file << codeBuffer;
+    file.close();
+
+    Jenjin::EngineRef->GetCurrentScene()->GetLuaManager()->ReloadScripts(
+        "scripts/");
+    Jenjin::EngineRef->GetCurrentScene()->GetLuaManager()->Ready();
+
+    showUnsaved = false;
+  };
+
+  if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S)) &&
+      ImGui::GetIO().KeyCtrl) {
+    save();
+  }
+
+  if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMenu("File")) {
+      static auto save_label = ICON_FA_FLOPPY_DISK " Save";
+      if (ImGui::MenuItem(save_label, "Ctrl+S"))
+        save();
+
+      ImGui::EndMenu();
+    }
+
+    ImGui::EndMenuBar();
+  }
+
+  auto codePosition = ImGui::GetWindowPos();
+  static auto *target = Jenjin::EngineRef->GetCurrentScene()->GetTarget();
+  target->SetWindowPosition(codePosition);
+
+  // TODO: completions on tab
+  if (ImGui::InputTextMultiline("##Code", codeBuffer, sizeof(codeBuffer),
+                                ImVec2(ImGui::GetWindowWidth() - 20,
+                                       ImGui::GetWindowHeight() - 40 - 32),
+                                ImGuiInputTextFlags_AllowTabInput)) {
+    showUnsaved = true;
+  }
+
+  ImGui::End();
+}
 
 void Manager::show_all(Jenjin::Scene *scene) {
   bool isRunning = this->running;
@@ -491,6 +573,8 @@ void Manager::show_all(Jenjin::Scene *scene) {
   inspector(scene);
   backup_prompts(scene);
   explorer(scene);
+  viewport(scene);
+  code(scene);
 }
 
 void Manager::welcome() {

@@ -29,6 +29,7 @@ public:
   void show_all(Jenjin::Scene *scene);
 
 	bool hasProjectOpen = false;
+	int renderTexture = -1;
 
 private:
   Jenjin::GameObject *selectedObject = nullptr;

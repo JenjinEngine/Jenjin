@@ -1,9 +1,12 @@
 #pragma once
 
 #include "jenjin/gameobject.h"
+#include "jenjin/camera.h"
 
 namespace Jenjin::Editor::Widgets {
-bool transformWidget(
+void transformWidget(
     Jenjin::GameObject::Transform
         *transform);
+
+void cameraWidget(Jenjin::Camera *camera);
 };
